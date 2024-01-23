@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorize People</title>
+    <style>
+        img{
+            width: 100px;
+            height: 120px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authorize People</h1>
+    {% for person in people %}
+        <div>
+            <p>Name: {{ person.name }}</p>
+        <img  src="{{ person.user_photo.url }}" alt="{{person.name}}">
+        </div>
+    {% endfor %}
+</body>
+</html>
