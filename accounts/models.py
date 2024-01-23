@@ -18,7 +18,7 @@ class Guardian(models.Model):
     last_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)
     relationship = models.CharField(max_length=50)
-    students = models.ManyToManyField("Student", related_name="guardians")
+
     # user_encoding_photo = models.BinaryField(null=True)
 
     def save(self, *args, **kwargs):
@@ -37,6 +37,7 @@ class Student(models.Model):
     last_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
     class_name = models.CharField(max_length=50)
+    guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

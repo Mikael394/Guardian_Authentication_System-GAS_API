@@ -9,11 +9,16 @@ from .forms import *
 from .models import *
 
 
-class StaffViewSet(
-    CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
-):
+class StaffViewSet(ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
+
+
+# class StaffViewSet(
+#     CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
+# ):
+#     queryset = Staff.objects.all()
+#     serializer_class = StaffSerializer
 
 
 class TestView(ModelViewSet):
@@ -24,6 +29,11 @@ class TestView(ModelViewSet):
 class GuardianView(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
+
+
+class StudentView(ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
 
 
 class Verify(ModelViewSet):
@@ -49,17 +59,19 @@ class Verify(ModelViewSet):
         serializer = self.get_serializer(guardian)
         temp_path = save_up(user_photo)
         result = compare(guardian.user_photo.path, temp_path)
+        staff = Staff.objects.get(user=request.user)
 
-        def create_log(self, student, guardian):
+        def create_log(self, student_id, guardian):
+            student = Student.objects.get(pk=student_id)
             Log.objects.create(
-                student=student.get("id"),
-                staff=self.request.user.id,
-                guardian=guardian.id,
+                student=student,
+                staff=staff,
+                guardian=guardian,
             )
 
         if result:
             for student in serializer.data.get("students"):
-                create_log(self, student, serializer.data.get("id"))
+                create_log(self, student.get("id"), guardian)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(

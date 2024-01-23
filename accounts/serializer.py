@@ -29,14 +29,6 @@ class UserSerializer(BaseUserSerializer):
         ]
 
 
-class StaffSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField()
-
-    class Meta:
-        model = Staff
-        fields = ["user_id", "phone_number", "role"]
-
-
 class ReactSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestAPI
@@ -56,6 +48,15 @@ class StudentSerializer(serializers.ModelSerializer):
             "class_name",
             "guardians",
         ]
+
+
+class StaffSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField()
+    # user = UserCreateSerializer()
+
+    class Meta:
+        model = Staff
+        fields = ["user_id", "phone_number", "role"]
 
 
 class GuardianSerializer(serializers.ModelSerializer):

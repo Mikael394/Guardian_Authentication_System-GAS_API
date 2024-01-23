@@ -12,6 +12,7 @@ router.register("staff", StaffViewSet)
 router.register("verify", Verify)
 router.register("courses/", TestView)
 router.register("logs", LogView)
+router.register("students", StudentView)
 guardian_router = routers.NestedDefaultRouter(router, "guardians", lookup="guardian")
 guardian_router.register("logs", LogView, basename="guardian-log")
 
