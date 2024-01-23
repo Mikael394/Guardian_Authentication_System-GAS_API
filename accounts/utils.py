@@ -157,6 +157,3 @@ def resize_image(image, scale_factor):
     dimension = (width, height)
     resized_image = cv2.resize(image, dimension, interpolation=cv2.INTER_AREA)
     return resized_image
-
-
-# print(compare('temp.jpg','1.jpg'))

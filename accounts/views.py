@@ -1,8 +1,9 @@
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.viewsets import ModelViewSet, GenericViewSet, ReadOnlyModelViewSet
 from rest_framework import status
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.response import Response
+from .permission import IsAdminOrReadOnly
 from .serializer import *
 from .utils import compare, save_up
 from .forms import *
@@ -12,6 +13,7 @@ from .models import *
 class StaffViewSet(ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
+    permission_classes = [IsAdminUser]
 
 
 # class StaffViewSet(
@@ -21,19 +23,16 @@ class StaffViewSet(ModelViewSet):
 #     serializer_class = StaffSerializer
 
 
-class TestView(ModelViewSet):
-    queryset = TestAPI.objects.all()
-    serializer_class = TestSerializer
-
-
 class GuardianView(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class StudentView(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class Verify(ModelViewSet):
@@ -82,6 +81,7 @@ class Verify(ModelViewSet):
 class LogView(ReadOnlyModelViewSet):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
+    permission_classes = [IsAdminUser]
 
 
 # def login(request, name):
