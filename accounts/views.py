@@ -10,7 +10,7 @@ from .forms import *
 from .models import *
 
 
-class StaffViewSet(ModelViewSet):
+class StaffView(ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
     permission_classes = [IsAdminUser]
@@ -37,14 +37,16 @@ class StudentView(ModelViewSet):
 
 class Verify(ModelViewSet):
     queryset = Guardian.objects.all()
-    serializer_class = GuardianSerializer
+    serializer_class = GuardianVerifySerializer
     permission_classes = [IsAuthenticated]
 
-    # def get_permissions(self):
-    #     if self.request.method == "GET":
-    #         return [AllowAny()]
-    #     else:
-    #         return [IsAuthenticated()]
+    # def get_serializer_class(self):
+    #     if self.action == "create":
+    #         return GuardianVerifySerializer
+
+    def list(self, request, *args, **kwargs):
+        # Disable the default list behavior
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def create(self, request, *args, **kwargs):
         username = request.data.get("username", None)
@@ -55,7 +57,10 @@ class Verify(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         guardian = Guardian.objects.get(username=username)
-        serializer = self.get_serializer(guardian)
+        # self.serializer_class = GuardianSerializer
+        # serializer = self.get_serializer(guardian)
+        serializer = GuardianSerializer(guardian)
+        # self.serializer_class = GuardianVerifySerializer
         temp_path = save_up(user_photo)
         result = compare(guardian.user_photo.path, temp_path)
         staff = Staff.objects.get(user=request.user)
@@ -71,6 +76,7 @@ class Verify(ModelViewSet):
         if result:
             for student in serializer.data.get("students"):
                 create_log(self, student.get("id"), guardian)
+                self.serializer_class = GuardianVerifySerializer
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
