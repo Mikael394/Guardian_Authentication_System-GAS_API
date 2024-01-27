@@ -1,6 +1,7 @@
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.viewsets import ModelViewSet, GenericViewSet, ReadOnlyModelViewSet
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from .permission import IsAdminOrReadOnly
@@ -60,6 +61,35 @@ class GuardianViewNested(ModelViewSet):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, instance):
+        student_id = self.kwargs["student_pk"]
+
+        # Remove the association between the guardian and the student
+        instance.students.remove(student_id)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["post"])
+    def add_guardian(self, request, *args, **kwargs):
+        student_id = self.kwargs["student_pk"]
+        guardian_id = request.data.get("guardian_id")
+
+        try:
+            guardian = Guardian.objects.get(id=guardian_id)
+        except Guardian.DoesNotExist:
+            return Response(
+                {"detail": "Guardian not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Add the guardian to the student
+        guardian.students.add(student_id)
+
+        # You can return a success response or the updated data as needed
+        return Response(
+            {"detail": "Guardian added to student successfully"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class StudentView(ModelViewSet):
