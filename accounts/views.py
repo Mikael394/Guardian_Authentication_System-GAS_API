@@ -70,26 +70,37 @@ class GuardianViewNested(ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["get", "post"])
     def add_guardian(self, request, *args, **kwargs):
         student_id = self.kwargs["student_pk"]
         guardian_id = request.data.get("guardian_id")
 
-        try:
-            guardian = Guardian.objects.get(id=guardian_id)
-        except Guardian.DoesNotExist:
+        if request.method == "GET":
+            # Return guardians that are not associated with the student
+            unassociated_guardians = Guardian.objects.exclude(students__id=student_id)
+            serializer = GuardianSerializerNested(unassociated_guardians, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            try:
+                guardian = Guardian.objects.get(id=guardian_id)
+            except Guardian.DoesNotExist:
+                return Response(
+                    {"detail": "Guardian not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+            if guardian.students.filter(id=student_id).exists():
+                return Response(
+                    {"detail": "Guardian is already associated with the student"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Add the guardian to the student
+            guardian.students.add(student_id)
+
+            # You can return a success response or the updated data as needed
             return Response(
-                {"detail": "Guardian not found"}, status=status.HTTP_404_NOT_FOUND
+                {"detail": "Guardian added to student successfully"},
+                status=status.HTTP_200_OK,
             )
-
-        # Add the guardian to the student
-        guardian.students.add(student_id)
-
-        # You can return a success response or the updated data as needed
-        return Response(
-            {"detail": "Guardian added to student successfully"},
-            status=status.HTTP_200_OK,
-        )
 
 
 class StudentView(ModelViewSet):
