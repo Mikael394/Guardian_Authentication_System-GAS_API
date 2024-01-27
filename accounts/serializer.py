@@ -59,14 +59,6 @@ class GuardianSerializer(serializers.ModelSerializer):
             "students",
         ]
 
-    # def create(self, validated_data):
-    #     student_id = self.context["student_id"]
-    #     print(student_id)
-    #     student = Student.objects.get(id=student_id)
-    #     guardian = Guardian.objects.create(**validated_data)
-    #     guardian.students.add(student)
-    #     return guardian
-
 
 class GuardianSerializerNested(serializers.ModelSerializer):
     class Meta:
@@ -95,6 +87,16 @@ class SimpleGuardianSerializer(serializers.ModelSerializer):
         ]
 
 
+class GuardianVerifySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Guardian
+        fields = [
+            "id",
+            "username",
+            "user_photo",
+        ]
+
+
 class StudentSerializer(serializers.ModelSerializer):
     # guardians = serializers.ListField(child=serializers.JSONField(), required=False)
     guardians = SimpleGuardianSerializer(many=True, required=False)
@@ -111,42 +113,6 @@ class StudentSerializer(serializers.ModelSerializer):
             "guardians",
         ]
 
-    # def create(self, validated_data):
-    #     guardians_data = validated_data.pop("guardians")
-    #     student = Student.objects.create(**validated_data)
-    #     for guardian_data in guardians_data:
-    #         guardian_id = guardian_data.get("id")
-    #         if guardian_id:
-    #             guardian = Guardian.objects.get(id=guardian_id)
-    #             student.guardians.add(guardian)
-    #             return student
-    #         new_guardian = Guardian.objects.create(**guardian_data)
-    #         student.guardians.add(new_guardian)
-    #     return student
-
-    # def partial_update(self, validated_data):
-    #     guardians_data = validated_data.pop("guardians")
-    #     student = Student.objects.create(**validated_data)
-    #     for guardian_data in guardians_data:
-    #         Guardian.objects.create(student=student, **guardian_data)
-    #     return student
-
-    # def update(self, instance, validated_data):
-    #     guardians_data = validated_data.pop("guardians", [])
-
-    #     for guardian_data in guardians_data:
-    #         if "id" in guardian_data:
-    #             # Add existing guardian to student
-    #             guardian_id = guardian_data["id"]
-    #             guardian = Guardian.objects.get(id=guardian_id)
-    #             instance.guardians.add(guardian)
-    #         else:
-    #             # Create and add a new guardian to student
-    #             new_guardian = Guardian.objects.create(**guardian_data)
-    #             instance.guardians.add(new_guardian)
-
-    #     return instance
-
 
 class StaffSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField()
@@ -158,9 +124,6 @@ class StaffSerializer(serializers.ModelSerializer):
 
 
 class GuardianVerifySerializer(serializers.ModelSerializer):
-    # students = StudentSerializer(many=True)
-    # students = serializers.StringRelatedField()
-
     class Meta:
         model = Guardian
         fields = [

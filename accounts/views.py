@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from .permission import IsAdminOrReadOnly
 from .serializer import *
 from .utils import compare, save_up
-from .forms import *
 from .models import *
 
 
@@ -107,34 +106,11 @@ class StudentView(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
-    # {
-    #     "first_name": "Eliana",
-    #     "last_name": "Endale",
-    #     "date_of_birth": "2024-01-12",
-    #     "class_name": "KG-2-A",
-    #     "guardians": [
-    #         {
-    #             "username": "feven",
-    #             "user_photo": null,
-    #             "first_name": "Endale",
-    #             "last_name": "W/gebrieal",
-    #             "phone_number": "0926181321",
-    #             "relationship": "Father",
-    #         }
-    #     ],
-    # }
-
-    # permission_classes = [IsAdminOrReadOnly]
-
 
 class Verify(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
     # permission_classes = [IsAuthenticated]
-
-    # def get_serializer_class(self):
-    #     if self.action == "create":
-    #         return GuardianVerifySerializer
 
     def create(self, request, *args, **kwargs):
         username = request.data.get("username", None)
@@ -175,34 +151,3 @@ class LogView(ReadOnlyModelViewSet):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
     permission_classes = [IsAdminUser]
-
-
-# def login(request, name):
-#     if request.method == "POST":
-#         user_face = request.FILES["face_image"]
-#         temp_path = save_up(user_face)
-#         # print(user_face.path)
-#         people = Person.objects.get(name=name)
-#         status = compare(people.user_photo.path, temp_path)
-#         if status:
-#             verified_person = people
-#             return render(request, "success.html", {"person": verified_person})
-#         else:
-#             return render(request, "failed.html")
-#     return render(request, "login.html")
-
-
-# def capture_data(request):
-#     if request.method == "POST":
-#         form = PersonForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             form.save()
-#             return redirect("authorize")
-#     else:
-#         form = PersonForm()
-#     return render(request, "capture_data.html", {"form": form})
-
-
-# def authorize(request):
-#     people = Person.objects.all()
-# return render(request, "authorize.html", {"people": people})
