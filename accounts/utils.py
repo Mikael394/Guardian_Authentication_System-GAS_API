@@ -65,7 +65,8 @@ def extract_face_haar_cascade(image_path):
     x, y, w, h = faces[0]
 
     # Crop the face from the original image
-    face_part = image[y : y + h, x : x + w]
+    face_part = image[y : (y + h), x : (x + w)]
+    print(face_part.shape)
 
     # Convert to RGB
     face_part_rgb = cv2.cvtColor(face_part, cv2.COLOR_BGR2RGB)
@@ -138,9 +139,9 @@ def compare(path1, path2):
 
     result = face_recognition.compare_faces(
         [image_encoding1[0]], image_encoding2[0], tolerance=0.5
-    )[0]
+    )
     print(result)
-    return result
+    return result[0]
 
 
 def resize(img_path, size):

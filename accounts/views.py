@@ -26,27 +26,65 @@ class StaffView(ModelViewSet):
 class GuardianView(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
-    permission_classes = [IsAdminOrReadOnly]
+
+    # # permission_classes = [IsAdminOrReadOnly]
+    # def get_serializer_context(self):
+    #     return {"student_id": self.kwargs["student_pk"]}
+
+    # def get_queryset(self):
+    #     if self.kwargs["student_pk"]:
+    #         return Guardian.objects.filter(id=self.kwargs["student_pk"])
+    #     else:
+    #         return Guardian.objects.all()
+
+
+class GuardianViewNested(ModelViewSet):
+    queryset = Guardian.objects.all()
+    serializer_class = GuardianSerializer
+
+    # # permission_classes = [IsAdminOrReadOnly]
+    def get_serializer_context(self):
+        return {"student_id": self.kwargs["student_pk"]}
+
+    def get_queryset(self):
+        if self.kwargs["student_pk"]:
+            return Guardian.objects.filter(id=self.kwargs["student_pk"])
+        else:
+            return Guardian.objects.all()
 
 
 class StudentView(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-    permission_classes = [IsAdminOrReadOnly]
+
+    # {
+    #     "first_name": "Eliana",
+    #     "last_name": "Endale",
+    #     "date_of_birth": "2024-01-12",
+    #     "class_name": "KG-2-A",
+    #     "guardians": [
+    #         {
+    #             "username": "feven",
+    #             "user_photo": null,
+    #             "first_name": "Endale",
+    #             "last_name": "W/gebrieal",
+    #             "phone_number": "0926181321",
+    #             "relationship": "Father",
+    #         }
+    #     ],
+    # }
+
+    # permission_classes = [IsAdminOrReadOnly]
 
 
 class Verify(ModelViewSet):
     queryset = Guardian.objects.all()
-    serializer_class = GuardianVerifySerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = GuardianSerializer
+    # permission_classes = [IsAuthenticated]
 
     # def get_serializer_class(self):
     #     if self.action == "create":
     #         return GuardianVerifySerializer
-
-    def list(self, request, *args, **kwargs):
-        # Disable the default list behavior
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def create(self, request, *args, **kwargs):
         username = request.data.get("username", None)
@@ -57,26 +95,25 @@ class Verify(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         guardian = Guardian.objects.get(username=username)
+        student
         # self.serializer_class = GuardianSerializer
-        # serializer = self.get_serializer(guardian)
-        serializer = GuardianSerializer(guardian)
+        serializer = self.get_serializer(guardian)
         # self.serializer_class = GuardianVerifySerializer
         temp_path = save_up(user_photo)
         result = compare(guardian.user_photo.path, temp_path)
-        staff = Staff.objects.get(user=request.user)
+        # staff = Staff.objects.get(user=request.user)
 
-        def create_log(self, student_id, guardian):
-            student = Student.objects.get(pk=student_id)
-            Log.objects.create(
-                student=student,
-                staff=staff,
-                guardian=guardian,
-            )
+        # def create_log(self, student_id, guardian):
+        #     student = Student.objects.get(pk=student_id)
+        #     Log.objects.create(
+        #         student=student,
+        #         staff=staff,
+        #         guardian=guardian,
+        #     )
 
         if result:
-            for student in serializer.data.get("students"):
-                create_log(self, student.get("id"), guardian)
-                self.serializer_class = GuardianVerifySerializer
+            # for student in serializer.data.get("students"):
+            #     create_log(self, student.get("id"), guardian)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(

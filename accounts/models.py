@@ -13,13 +13,15 @@ class User(AbstractUser):
 
 class Guardian(models.Model):
     username = models.CharField(max_length=50, unique=True)
-    user_photo = models.ImageField(upload_to="guardian_faces")
+    user_photo = models.ImageField(
+        upload_to="guardian_faces",
+        default="default/OIP.jpg",
+        null=True,
+    )
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)
     relationship = models.CharField(max_length=50)
-
-    # user_encoding_photo = models.BinaryField(null=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -37,6 +39,7 @@ class Student(models.Model):
     last_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
     class_name = models.CharField(max_length=50)
+    image = models.ImageField(upload_to="students/", null=True)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
 
     def __str__(self):
