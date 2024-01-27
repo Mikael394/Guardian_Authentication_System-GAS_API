@@ -15,7 +15,7 @@ router.register("logs", LogView)
 
 
 student_router = routers.NestedDefaultRouter(router, "students", lookup="student")
-student_router.register("guardians", GuardianView, basename="student-guardian")
+student_router.register("guardians", GuardianViewNested, basename="student-guardian")
 
 urlpatterns = [
     path("", include(router.urls)),

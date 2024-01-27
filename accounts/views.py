@@ -40,17 +40,26 @@ class GuardianView(ModelViewSet):
 
 class GuardianViewNested(ModelViewSet):
     queryset = Guardian.objects.all()
-    serializer_class = GuardianSerializer
+    serializer_class = GuardianSerializerNested
 
     # # permission_classes = [IsAdminOrReadOnly]
     def get_serializer_context(self):
         return {"student_id": self.kwargs["student_pk"]}
 
     def get_queryset(self):
-        if self.kwargs["student_pk"]:
-            return Guardian.objects.filter(id=self.kwargs["student_pk"])
-        else:
-            return Guardian.objects.all()
+        return Guardian.objects.filter(students__id=self.kwargs["student_pk"])
+
+    def perform_create(self, serializer):
+        print(self.kwargs)
+        student_id = self.kwargs["student_pk"]
+
+        # Validate and set the student_id before saving the instance
+        serializer.validated_data["students"] = [student_id]
+
+        # Save the instance with the validated data
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class StudentView(ModelViewSet):
