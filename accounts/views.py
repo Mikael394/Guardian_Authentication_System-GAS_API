@@ -16,13 +16,6 @@ class StaffView(ModelViewSet):
     permission_classes = [IsAdminUser]
 
 
-# class StaffViewSet(
-#     CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
-# ):
-#     queryset = Staff.objects.all()
-#     serializer_class = StaffSerializer
-
-
 class GuardianView(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
@@ -121,7 +114,7 @@ class Verify(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         guardian = Guardian.objects.get(username=username)
-        student
+
         # self.serializer_class = GuardianSerializer
         serializer = self.get_serializer(guardian)
         # self.serializer_class = GuardianVerifySerializer
@@ -144,6 +137,28 @@ class Verify(ModelViewSet):
         else:
             return Response(
                 {"error": "You are no Authorized"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=["post"])
+    def create_log(self, request, *args, **kwargs):
+        student_id = request.data.get("student_id")
+        student = Student.objects.get(id=student_id)
+        guardian_id = request.data.get("guardian_id")
+        guardian = Guardian.objects.get(id=guardian_id)
+        staff = Staff.objects.get(user=request.user)
+
+        try:
+            log = Log.objects.create(student=student, guardian=guardian, staff=staff)
+
+            return Response(
+                {"message": "Log object created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            print(f"An error occurred while creating the Log object: {e}")
+            return Response(
+                {"error": "Error creating Log object"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 

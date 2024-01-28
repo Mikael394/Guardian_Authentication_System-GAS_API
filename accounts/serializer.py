@@ -115,7 +115,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class StaffSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField()
+    user_id = serializers.UUIDField()
     # user = UserCreateSerializer()
 
     class Meta:
