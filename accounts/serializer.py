@@ -115,12 +115,12 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class StaffSerializer(serializers.ModelSerializer):
-    user_id = serializers.UUIDField()
-    # user = UserCreateSerializer()
+    # user_id = serializers.UUIDField()
+    user = UserCreateSerializer()
 
     class Meta:
         model = Staff
-        fields = ["user_id", "phone_number", "role"]
+        fields = ["user", "phone_number", "role"]
 
 
 class GuardianVerifySerializer(serializers.ModelSerializer):

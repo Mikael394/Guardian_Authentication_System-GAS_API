@@ -13,7 +13,7 @@ from .models import *
 class StaffView(ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
 
 class GuardianView(ModelViewSet):
@@ -142,8 +142,8 @@ class Verify(ModelViewSet):
     @action(detail=False, methods=["post"])
     def create_log(self, request, *args, **kwargs):
         student_id = request.data.get("student_id")
-        student = Student.objects.get(id=student_id)
         guardian_id = request.data.get("guardian_id")
+        student = Student.objects.get(id=student_id)
         guardian = Guardian.objects.get(id=guardian_id)
         staff = Staff.objects.get(user=request.user)
 
