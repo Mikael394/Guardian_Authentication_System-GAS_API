@@ -20,15 +20,10 @@ class GuardianView(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
 
-    # # permission_classes = [IsAdminOrReadOnly]
-    # def get_serializer_context(self):
-    #     return {"student_id": self.kwargs["student_pk"]}
 
-    # def get_queryset(self):
-    #     if self.kwargs["student_pk"]:
-    #         return Guardian.objects.filter(id=self.kwargs["student_pk"])
-    #     else:
-    #         return Guardian.objects.all()
+class GuardianView(ModelViewSet):
+    queryset = Guardian.objects.all()
+    serializer_class = GuardianSerializer
 
 
 class GuardianViewNested(ModelViewSet):
@@ -98,6 +93,26 @@ class GuardianViewNested(ModelViewSet):
 class StudentView(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+
+
+class StudentViewNested(ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+
+    # permission_classes = [IsAdminOrReadOnly]
+    # def get_serializer_context(self):
+    #     return {"student_id": self.kwargs["student_pk"]}
+
+    def get_queryset(self):
+        return Student.objects.filter(guardians__id=self.kwargs["guardian_pk"])
+
+    def perform_destroy(self, instance):
+        guardian_id = self.kwargs["guardian_pk"]
+
+        # Remove the association between the guardian and the student
+        instance.guardians.remove(guardian_id)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class Verify(ModelViewSet):

@@ -139,7 +139,7 @@ class LogSerializer(serializers.ModelSerializer):
     class Meta:
         model = Log
         fields = [
-            # "id",
+            "id",
             "student",
             "guardian",
             "staff",
