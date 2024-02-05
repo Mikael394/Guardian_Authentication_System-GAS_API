@@ -29,7 +29,7 @@ class Guardian(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         processed_img = extract_face_haar_cascade(self.user_photo.path)
-        processed_img = resize_image(processed_img, 0.5)
+        # processed_img = resize_image(processed_img, 0.5)
         pil_image = Image.fromarray(processed_img)
         pil_image.save(self.user_photo.path)
 

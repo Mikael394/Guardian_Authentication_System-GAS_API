@@ -124,7 +124,7 @@ def save_up(uploaded_image):
         print(f"Error saving image: {e}")
         return False
     processed_img = extract_face_haar_cascade(temp_path)
-    processed_img = resize_image(processed_img, 0.5)
+    # processed_img = resize_image(processed_img, 0.5)
     pil_image = Image.fromarray(processed_img)
     pil_image.save(temp_path)
     return temp_path
