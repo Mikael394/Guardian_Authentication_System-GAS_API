@@ -18,6 +18,9 @@ from django.contrib import admin
 from django.urls import path, include
 import debug_toolbar
 
+admin.site.site_header = "School Guardian Security System"
+admin.site.index_title = "Adminnistrator Page"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("accounts.urls")),

@@ -28,7 +28,13 @@ SECRET_KEY = "django-insecure-re%tlt^5aer_y08*!%f29#7y5dm9hv5#*(2z3l0&!&r0z%23)n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 # '192.168.1.6','127.0.0.1'
-ALLOWED_HOSTS = ["192.168.1.9", "127.0.0.1", "localhost", "192.168.51.131","10.42.0.61"]
+ALLOWED_HOSTS = [
+    "192.168.1.9",
+    "127.0.0.1",
+    "localhost",
+    "192.168.51.131",
+    "10.42.0.61",
+]
 AUTH_USER_MODEL = "accounts.User"
 
 # Application definition
@@ -155,4 +161,8 @@ DJOSER = {
         "current_user": "accounts.serializer.UserSerializer",
     }
 }
-SIMPLE_JWT = {"AUTH_HEADER_TYPES": ("JWT",), "ACCESS_TOKEN_LIFETIME": timedelta(days=1)}
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("JWT",),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+}
