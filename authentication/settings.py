@@ -159,6 +159,7 @@ DJOSER = {
     "SERIALIZERS": {
         "user_create": "accounts.serializer.UserCreateSerializer",
         "current_user": "accounts.serializer.UserSerializer",
+        
     }
 }
 SIMPLE_JWT = {

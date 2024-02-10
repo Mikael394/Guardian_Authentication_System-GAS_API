@@ -27,14 +27,3 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# urlpatterns = [
-#     # path("login/<name>", login, name="login"),
-#     # path("capture/", capture_data, name="capture_data"),
-#     # path("authorize/", authorize, name="authorize"),
-#     # path("students/", students_list, name="students"),
-#     # path("courses/", include(router.urls)),
-#     # path("", include(.urls)),
-#     path("", include(guardian_router.urls)),
-#     path("", include(router.urls)),
-# ]

@@ -1,13 +1,32 @@
 from django.db import models
 import uuid
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from .utils import extract_face_haar_cascade, resize_image
+from datetime import date
+from django.contrib.auth.models import AbstractUser
+from .utils import extract_face_haar_cascade
 from PIL import Image
 
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=200, unique=True)
+    phone_number = models.CharField(max_length=15)
+    GENDER_FIELDS = [("M", "Male"), ("F", "Female")]
+    gender = models.CharField(max_length=1, choices=GENDER_FIELDS)
+    date_of_birth = models.DateField(default=date.today)
+    address = models.CharField(max_length=30)
+
+    @property
+    def age(self):
+        today = date.today()
+        age = (
+            today.year
+            - self.date_of_birth.year
+            - (
+                (today.month, today.day)
+                < (self.date_of_birth.month, self.date_of_birth.day)
+            )
+        )
+        return age
 
     def __str__(self):
         return self.username
@@ -15,23 +34,37 @@ class User(AbstractUser):
 
 class Guardian(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    username = models.CharField(max_length=50, unique=True)
-    user_photo = models.ImageField(
-        upload_to="guardian_faces",
-        default="default/OIP.jpg",
-        null=True,
-    )
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
+    username = models.CharField(max_length=50, unique=True)
+    user_photo = models.ImageField(upload_to="guardian_faces")
     phone_number = models.CharField(max_length=15)
+    GENDER_FIELDS = [("M", "Male"), ("F", "Female")]
+    gender = models.CharField(max_length=1, choices=GENDER_FIELDS)
+    date_of_birth = models.DateField()
+    address = models.CharField(max_length=30)
     relationship = models.CharField(max_length=50)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        processed_img = extract_face_haar_cascade(self.user_photo.path)
-        # processed_img = resize_image(processed_img, 0.5)
-        pil_image = Image.fromarray(processed_img)
-        pil_image.save(self.user_photo.path)
+    @property
+    def age(self):
+        today = date.today()
+        age = (
+            today.year
+            - self.date_of_birth.year
+            - (
+                (today.month, today.day)
+                < (self.date_of_birth.month, self.date_of_birth.day)
+            )
+        )
+        return age
+
+    
+
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
+    #     processed_img = extract_face_haar_cascade(self.user_photo.path)
+    #     pil_image = Image.fromarray(processed_img)
+    #     pil_image.save(self.user_photo.path)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -52,7 +85,6 @@ class Student(models.Model):
 
 
 class Staff(models.Model):
-    phone_number = models.CharField(max_length=15)
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     role = models.CharField(max_length=50)
 

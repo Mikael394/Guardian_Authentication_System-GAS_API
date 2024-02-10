@@ -3,7 +3,7 @@ from djoser.serializers import (
     UserSerializer as BaseUserSerializer,
     UserCreateSerializer as BaseUserCreateSerializer,
 )
-from .models import *
+from .models import Student,Guardian,Staff,Log
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -14,6 +14,9 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "last_name",
             "username",
             "email",
+            "phone_number",
+            "gender",
+            "date_of_birth",
             "password",
         ]
 
@@ -65,10 +68,14 @@ class GuardianSerializerNested(serializers.ModelSerializer):
         model = Guardian
         fields = [
             "id",
-            "username",
-            "user_photo",
             "first_name",
             "last_name",
+            "username",
+            "phone_number",
+            "gender",
+            "date_of_birth",
+            "address",
+            "user_photo",
             "phone_number",
             "relationship",
         ]
@@ -120,17 +127,17 @@ class StaffSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = ["user", "phone_number", "role"]
+        fields = ["user", "role"]
 
 
-class GuardianVerifySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Guardian
-        fields = [
-            "id",
-            "username",
-            "user_photo",
-        ]
+# class GuardianVerifySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Guardian
+#         fields = [
+#             "id",
+#             "username",
+#             "user_photo",
+#         ]
 
 
 class LogSerializer(serializers.ModelSerializer):

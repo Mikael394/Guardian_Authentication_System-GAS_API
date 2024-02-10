@@ -5,9 +5,14 @@ from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from .permission import IsAdminOrReadOnly
-from .serializer import *
-from .utils import compare, save_up
-from .models import *
+from .serializer import StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer
+from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy
+from .models import Student,Guardian,Staff,Log
+from PIL import Image
+from io import BytesIO
+from rest_framework.exceptions import ValidationError
+from django.core.files.base import ContentFile
+
 
 
 
@@ -16,16 +21,12 @@ class StaffView(ModelViewSet):
     serializer_class = StaffSerializer
     # permission_classes = [IsAdminUser]
 
-
-class GuardianView(ModelViewSet):
-    queryset = Guardian.objects.all()
-    serializer_class = GuardianSerializer
+    
 
 
 class GuardianView(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
-
 
 class GuardianViewNested(ModelViewSet):
     queryset = Guardian.objects.all()
@@ -39,17 +40,30 @@ class GuardianViewNested(ModelViewSet):
         return Guardian.objects.filter(students__id=self.kwargs["student_pk"])
 
     def perform_create(self, serializer):
-        print(self.kwargs)
         student_id = self.kwargs["student_pk"]
+        user_photo = self.request.data["user_photo"].read()
+        user_photo = image_to_numpy(user_photo)
+        processed_img = extract_face_haar_cascade3(user_photo)
 
-        # Validate and set the student_id before saving the instance
+        if processed_img is None:
+             return Response(
+                    {"detail": "No face detected"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        pil_image = Image.fromarray(processed_img)
+
+        # Convert PIL Image to a file-like object
+        image_io = BytesIO()
+        pil_image.save(image_io, format='JPEG')  # Adjust format based on your image format
+        image_file = ContentFile(image_io.getvalue(), name='user_photo.jpg')  # Adjust the name as needed
+
+        # Validate and set the student_id and user_photo before saving the instance
         serializer.validated_data["students"] = [student_id]
-
-        # Save the instance with the validated data
+        serializer.validated_data["user_photo"] = image_file
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+    
     def perform_destroy(self, instance):
         student_id = self.kwargs["student_pk"]
 
@@ -115,7 +129,6 @@ class StudentViewNested(ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
 class Verify(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
@@ -130,30 +143,21 @@ class Verify(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         guardian = Guardian.objects.get(username=username)
-
-        # self.serializer_class = GuardianSerializer
         serializer = self.get_serializer(guardian)
-        # self.serializer_class = GuardianVerifySerializer
         temp_path = save_up(user_photo)
+        if temp_path is None:
+            return Response(
+                {"error": "No face found in the image"}, status=status.HTTP_400_BAD_REQUEST
+            )
         result = compare(guardian.user_photo.path, temp_path)
-        # staff = Staff.objects.get(user=request.user)
-
-        # def create_log(self, student_id, guardian):
-        #     student = Student.objects.get(pk=student_id)
-        #     Log.objects.create(
-        #         student=student,
-        #         staff=staff,
-        #         guardian=guardian,
-        #     )
 
         if result:
-            # for student in serializer.data.get("students"):
-            #     create_log(self, student.get("id"), guardian)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
                 {"error": "You are no Authorized"}, status=status.HTTP_400_BAD_REQUEST
             )
+
 
     @action(detail=False, methods=["post"])
     def create_log(self, request, *args, **kwargs):
@@ -165,7 +169,7 @@ class Verify(ModelViewSet):
 
         try:
             log = Log.objects.create(student=student, guardian=guardian, staff=staff)
-
+            student.is_present = False
             return Response(
                 {"message": "Log object created successfully"},
                 status=status.HTTP_201_CREATED,
