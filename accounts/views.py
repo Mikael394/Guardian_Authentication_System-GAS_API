@@ -46,10 +46,7 @@ class GuardianViewNested(ModelViewSet):
         processed_img = extract_face_haar_cascade3(user_photo)
 
         if processed_img is None:
-             return Response(
-                    {"detail": "No face detected"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+             raise ValidationError({"detail":"No face found in the image"})
         pil_image = Image.fromarray(processed_img)
 
         # Convert PIL Image to a file-like object
@@ -63,6 +60,7 @@ class GuardianViewNested(ModelViewSet):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     
     def perform_destroy(self, instance):
         student_id = self.kwargs["student_pk"]
