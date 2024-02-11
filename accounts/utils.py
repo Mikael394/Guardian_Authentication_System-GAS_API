@@ -115,3 +115,16 @@ def compare(path1, path2):
     )
     print(result)
     return result[0]
+
+def compare2(path1, image2):
+    image1 = face_recognition.load_image_file(path1)
+    # image2 = face_recognition.load_image_file(path2)
+
+    image_encoding1 = face_recognition.face_encodings(image1)
+    image_encoding2 = face_recognition.face_encodings(image2)
+
+    result = face_recognition.compare_faces(
+        [image_encoding1[0]], image_encoding2[0], tolerance=0.5
+    )
+    print(result)
+    return result[0]

@@ -140,7 +140,12 @@ class Verify(ModelViewSet):
                 {"error": "username and face is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        guardian = Guardian.objects.get(username=username)
+        try:
+            guardian = Guardian.objects.get(username=username)
+        except Guardian.DoesNotExist:
+                return Response(
+                    {"detail": "Guardian not found with this"}, status=status.HTTP_404_NOT_FOUND
+                )
         serializer = self.get_serializer(guardian)
         temp_path = save_up(user_photo)
         if temp_path is None:
