@@ -3,7 +3,7 @@ from djoser.serializers import (
     UserSerializer as BaseUserSerializer,
     UserCreateSerializer as BaseUserCreateSerializer,
 )
-from .models import Student,Guardian,Staff,Log
+from .models import Student,Guardian,Staff,Log,User
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -30,7 +30,7 @@ class SimpleStudentSerializer(serializers.ModelSerializer):
             "id",
             "first_name",
             "last_name",
-            "class_name",
+            "grade",
         ]
 
 
@@ -41,9 +41,10 @@ class UserSerializer(BaseUserSerializer):
             "first_name",
             "last_name",
             "username",
+            "is_staff",
+            "is_superuser",
             "email",
         ]
-
 
 class GuardianSerializer(serializers.ModelSerializer):
     # students = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -116,18 +117,17 @@ class StudentSerializer(serializers.ModelSerializer):
             "image",
             "last_name",
             "date_of_birth",
-            "class_name",
+            "grade",
             "guardians",
         ]
 
 
 class StaffSerializer(serializers.ModelSerializer):
-    # user_id = serializers.UUIDField()
-    user = UserCreateSerializer()
+    user_id = serializers.UUIDField()
 
     class Meta:
         model = Staff
-        fields = ["user", "role"]
+        fields = ["user_id", "role"]
 
 
 # class GuardianVerifySerializer(serializers.ModelSerializer):

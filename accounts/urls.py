@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import *
+from .views import StudentView,GuardianView,StaffView,Verify,LogView,StudentViewNested,GuardianViewNested
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_nested import routers

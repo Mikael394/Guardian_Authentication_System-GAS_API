@@ -1,8 +1,8 @@
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from rest_framework.viewsets import ModelViewSet, GenericViewSet, ReadOnlyModelViewSet
+from rest_framework.permissions import IsAdminUser
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+
 from rest_framework.response import Response
 from .permission import IsAdminOrReadOnly
 from .serializer import StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer
@@ -157,8 +157,9 @@ class Verify(ModelViewSet):
         if result:
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
+            print("not authorized...")
             return Response(
-                {"error": "You are no Authorized"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "You are not Authorized"}, status=status.HTTP_400_BAD_REQUEST
             )
 
 

@@ -2,16 +2,14 @@ from django.db import models
 import uuid
 from datetime import date
 from django.contrib.auth.models import AbstractUser
-from .utils import extract_face_haar_cascade
-from PIL import Image
 
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=200, unique=True)
     phone_number = models.CharField(max_length=15)
-    GENDER_FIELDS = [("M", "Male"), ("F", "Female")]
-    gender = models.CharField(max_length=1, choices=GENDER_FIELDS)
+    GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
+    gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     date_of_birth = models.DateField(default=date.today)
     address = models.CharField(max_length=30)
 
@@ -38,11 +36,11 @@ class Guardian(models.Model):
     last_name = models.CharField(max_length=255)
     username = models.CharField(max_length=50, unique=True)
     user_photo = models.ImageField(upload_to="guardian_faces")
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=15, null=True)
     GENDER_FIELDS = [("M", "Male"), ("F", "Female")]
-    gender = models.CharField(max_length=1, choices=GENDER_FIELDS)
-    date_of_birth = models.DateField()
-    address = models.CharField(max_length=30)
+    gender = models.CharField(max_length=1, choices=GENDER_FIELDS, null=True)
+    date_of_birth = models.DateField(null=True)
+    address = models.CharField(max_length=30,null=True)
     relationship = models.CharField(max_length=50)
 
     @property
@@ -75,7 +73,7 @@ class Student(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
-    class_name = models.CharField(max_length=50)
+    grade = models.CharField(max_length=50)
     image = models.ImageField(upload_to="students/", null=True)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
     is_present = models.BooleanField(default=False)

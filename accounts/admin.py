@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import *
+from .models import Guardian,Student,Log,User,Staff
 
 # Register your models here.
 @admin.register(Guardian)
