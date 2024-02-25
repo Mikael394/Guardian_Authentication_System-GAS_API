@@ -147,9 +147,38 @@ class StaffSerializer(serializers.ModelSerializer):
 #         ]
 
 
-class LogSerializer(serializers.ModelSerializer):
-    # guardians = GuardianSerializer(many=True)
+class SimpleGuardianSerializerForLog(serializers.ModelSerializer):
+    class Meta:
+        model = Guardian
+        fields = [
+            "id",
+            "username"  
+        ]
 
+class SimpleStaffSerializerForLog(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = Staff
+        fields = [
+            "user_id",
+            "user"  
+        ]
+
+class SimpleStudentSerializerForLog(serializers.ModelSerializer):
+
+    class Meta:
+        model = Student
+        fields = [
+            "id",
+            "first_name",
+            "last_name"
+        ]
+
+
+class LogSerializer(serializers.ModelSerializer):
+    guardian = SimpleGuardianSerializerForLog()
+    staff = SimpleStaffSerializerForLog()
+    student = SimpleStudentSerializerForLog()
     class Meta:
         model = Log
         fields = [
