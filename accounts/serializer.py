@@ -31,6 +31,8 @@ class SimpleStudentSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "grade",
+            "is_present",
+            "image"
         ]
 
 
@@ -58,6 +60,9 @@ class GuardianSerializer(serializers.ModelSerializer):
             "user_photo",
             "first_name",
             "last_name",
+            "gender",
+            "date_of_birth",
+            "address",
             "phone_number",
             "relationship",
             "students",
@@ -77,7 +82,6 @@ class GuardianSerializerNested(serializers.ModelSerializer):
             "date_of_birth",
             "address",
             "user_photo",
-            "phone_number",
             "relationship",
         ]
 
@@ -91,7 +95,8 @@ class SimpleGuardianSerializer(serializers.ModelSerializer):
             "user_photo",
             "first_name",
             "last_name",
-            "phone_number",
+            "phone_number"
+            
         ]
 
 
@@ -117,6 +122,8 @@ class StudentSerializer(serializers.ModelSerializer):
             "image",
             "last_name",
             "date_of_birth",
+            "gender",
+           "is_present",
             "grade",
             "guardians",
         ]

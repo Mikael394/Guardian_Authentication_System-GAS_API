@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import StudentView,GuardianView,StaffView,Verify,LogView,StudentViewNested,GuardianViewNested
+from .views import StudentView,GuardianView,StaffView,Verify,LogView,StudentViewNested,GuardianViewNested,LogViewNested
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_nested import routers
@@ -18,6 +18,9 @@ guardian_router.register("students", StudentViewNested, basename="guardian-stude
 
 student_router = routers.NestedDefaultRouter(router, "students", lookup="student")
 student_router.register("guardians", GuardianViewNested, basename="student-guardian")
+
+student_router.register("logs", LogViewNested, basename="student-log")
+
 
 urlpatterns = [
     path("", include(router.urls)),

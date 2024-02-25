@@ -28,6 +28,20 @@ class GuardianView(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
 
+class LogViewNested(ModelViewSet):
+    queryset = Log.objects.all()
+    serializer_class = LogSerializer
+
+    # # permission_classes = [IsAdminOrReadOnly]
+    def get_serializer_context(self):
+        print(self.kwargs)
+        return {"student_id": self.kwargs["student_pk"]}
+
+    def get_queryset(self):
+        print(self.kwargs)
+        return Log.objects.filter(student__id=self.kwargs["student_pk"])
+
+
 class GuardianViewNested(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializerNested
@@ -167,13 +181,15 @@ class Verify(ModelViewSet):
     def create_log(self, request, *args, **kwargs):
         student_id = request.data.get("student_id")
         guardian_id = request.data.get("guardian_id")
+        staff_id = request.data.get("guardian_id")
         student = Student.objects.get(id=student_id)
         guardian = Guardian.objects.get(id=guardian_id)
-        staff = Staff.objects.get(user=request.user)
+        staff = Staff.objects.get(user__id=staff_id)
 
         try:
             log = Log.objects.create(student=student, guardian=guardian, staff=staff)
             student.is_present = False
+            student.save()
             return Response(
                 {"message": "Log object created successfully"},
                 status=status.HTTP_201_CREATED,
@@ -189,4 +205,4 @@ class Verify(ModelViewSet):
 class LogView(ReadOnlyModelViewSet):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]

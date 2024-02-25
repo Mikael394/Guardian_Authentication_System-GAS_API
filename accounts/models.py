@@ -8,6 +8,7 @@ class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=200, unique=True)
     phone_number = models.CharField(max_length=15)
+    
     GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     date_of_birth = models.DateField(default=date.today)
@@ -37,8 +38,8 @@ class Guardian(models.Model):
     username = models.CharField(max_length=50, unique=True)
     user_photo = models.ImageField(upload_to="guardian_faces")
     phone_number = models.CharField(max_length=15, null=True)
-    GENDER_FIELDS = [("M", "Male"), ("F", "Female")]
-    gender = models.CharField(max_length=1, choices=GENDER_FIELDS, null=True)
+    GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
+    gender = models.CharField(max_length=6, choices=GENDER_FIELDS, null=True)
     date_of_birth = models.DateField(null=True)
     address = models.CharField(max_length=30,null=True)
     relationship = models.CharField(max_length=50)
@@ -73,6 +74,8 @@ class Student(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
+    GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
+    gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     grade = models.CharField(max_length=50)
     image = models.ImageField(upload_to="students/", null=True)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)

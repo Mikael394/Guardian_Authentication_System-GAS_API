@@ -26,7 +26,7 @@ def extract_face_haar_cascade(image_path):
         )
 
         # Detect faces in the image
-        faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.3, minNeighbors=5)
+        faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.4, minNeighbors=5)
 
         if len(faces) == 0:
             print("No faces found in the image")
@@ -66,7 +66,7 @@ def extract_face_haar_cascade3(image):
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
         # Detect faces in the image
-        faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.3, minNeighbors=5)
+        faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.4, minNeighbors=5)
 
         if len(faces) == 0:
             print("No faces found in the image")
