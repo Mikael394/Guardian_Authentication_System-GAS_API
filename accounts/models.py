@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 import uuid
 from datetime import date
@@ -56,34 +57,50 @@ class Guardian(models.Model):
             )
         )
         return age
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
-    
+class HomeRoomTeacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+
 
     # def save(self, *args, **kwargs):
     #     super().save(*args, **kwargs)
     #     processed_img = extract_face_haar_cascade(self.user_photo.path)
     #     pil_image = Image.fromarray(processed_img)
     #     pil_image.save(self.user_photo.path)
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+
+class Parent(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user_photo = models.ImageField(upload_to="parents photo")
+
+class GradeAndSection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    grade = models.CharField(max_length=20)
+    section = models.CharField(max_length=2)
+    home_room_teacher = models.OneToOneField(HomeRoomTeacher,on_delete = models.CASCADE, null = True, blank = True)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
+        return f"{self.grade} {self.section}"
 
 class Student(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
+    grade_and_section = models.ForeignKey(GradeAndSection, on_delete = models.CASCADE)
     GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
-    grade = models.CharField(max_length=50)
     image = models.ImageField(upload_to="students/", null=True)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
+    parents = models.ManyToManyField("Parent",related_name="students", blank=True)
     is_present = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-
+    
 
 class Staff(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -92,6 +109,31 @@ class Staff(models.Model):
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
 
+class ContactBook(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    home_room_teacher = models.ForeignKey(HomeRoomTeacher, on_delete=models.CASCADE)
+    date_time = models.DateTimeField(auto_now=True)
+    LEVEL = [("Very Good","Very Good"),("Good","Good"),("Fair","Fair"),("Need Improvement","Need Improvement")]
+    yes_no = [("Yes","Yes"),("No","No")]
+    parents_follow_up = models.CharField(max_length=20, choices=LEVEL)
+    hand_writing = models.CharField(max_length=20, choices=LEVEL)
+    reading_skill = models.CharField(max_length=20, choices=LEVEL)
+    material_handling = models.CharField(max_length=20, choices=LEVEL)
+
+    happy = models.CharField(max_length=20, choices=yes_no)
+    wear_uniform = models.CharField(max_length=20, choices=yes_no)
+    has_good_time_while_eating = models.CharField(max_length=20, choices=yes_no)
+    active_participation = models.CharField(max_length=20, choices=yes_no)
+
+    
+    teacher_comment = models.TextField()
+    parent_comment = models.TextField()
+
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.student} - {self.date_time}"
 
 class Log(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -103,3 +145,7 @@ class Log(models.Model):
 
     def __str__(self):
         return self.action
+    
+class Video(models.Model):
+    file = models.FileField(upload_to='videos/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)

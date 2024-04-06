@@ -3,7 +3,18 @@ from djoser.serializers import (
     UserSerializer as BaseUserSerializer,
     UserCreateSerializer as BaseUserCreateSerializer,
 )
-from .models import Student,Guardian,Staff,Log,User
+from .models import (
+    ContactBook,
+    GradeAndSection,
+    HomeRoomTeacher,
+    Parent,
+    Student,
+    Guardian,
+    Staff,
+    Log,
+    User,
+    Video,
+)
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -26,14 +37,7 @@ class SimpleStudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Student
-        fields = [
-            "id",
-            "first_name",
-            "last_name",
-            "grade",
-            "is_present",
-            "image"
-        ]
+        fields = ["id", "first_name", "last_name", "grade", "is_present", "image"]
 
 
 class UserSerializer(BaseUserSerializer):
@@ -47,6 +51,7 @@ class UserSerializer(BaseUserSerializer):
             "is_superuser",
             "email",
         ]
+
 
 class GuardianSerializer(serializers.ModelSerializer):
     # students = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -67,6 +72,78 @@ class GuardianSerializer(serializers.ModelSerializer):
             "relationship",
             "students",
         ]
+
+
+class HomeRoomTeacherSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField()
+
+    class Meta:
+        model = HomeRoomTeacher
+        fields = ["user_id"]
+
+
+class ParentSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField()
+
+    class Meta:
+        model = Parent
+        fields = ["user_id", "user_photo"]
+
+
+class ContactBookSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ContactBook
+        fields = [
+            "id",
+            "student",
+            "home_room_teacher",
+            "date_time",
+            "parents_follow_up",
+            "hand_writing",
+            "reading_skill",
+            "material_handling",
+            "happy",
+            "wear_uniform",
+            "has_good_time_while_eating",
+            "active_participation",
+            "teacher_comment",
+            "parent_comment",
+            "is_read"
+        ]
+
+class ContactBookSerializerNested(serializers.ModelSerializer):
+
+    class Meta:
+        model = ContactBook
+        fields = [
+            "id",
+            # "student",
+            # "home_room_teacher",
+            "date_time",
+            "parents_follow_up",
+            "hand_writing",
+            "reading_skill",
+            "material_handling",
+            "happy",
+            "wear_uniform",
+            "has_good_time_while_eating",
+            "active_participation",
+            "teacher_comment",
+            "parent_comment",
+            "is_read"
+        ]
+
+class VideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Video
+        fields = ('id', 'title', 'file', 'uploaded_at')
+
+class GradeAndSectionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = GradeAndSection
+        fields = ["id", "grade", "section"]
 
 
 class GuardianSerializerNested(serializers.ModelSerializer):
@@ -95,8 +172,7 @@ class SimpleGuardianSerializer(serializers.ModelSerializer):
             "user_photo",
             "first_name",
             "last_name",
-            "phone_number"
-            
+            "phone_number",
         ]
 
 
@@ -123,8 +199,8 @@ class StudentSerializer(serializers.ModelSerializer):
             "last_name",
             "date_of_birth",
             "gender",
-           "is_present",
-            "grade",
+            "is_present",
+            "grade_and_section",
             "guardians",
         ]
 
@@ -150,35 +226,29 @@ class StaffSerializer(serializers.ModelSerializer):
 class SimpleGuardianSerializerForLog(serializers.ModelSerializer):
     class Meta:
         model = Guardian
-        fields = [
-            "id",
-            "username"  
-        ]
+        fields = ["id", "username"]
+
 
 class SimpleStaffSerializerForLog(serializers.ModelSerializer):
     user = UserSerializer()
+
     class Meta:
         model = Staff
-        fields = [
-            "user_id",
-            "user"  
-        ]
+        fields = ["user_id", "user"]
+
 
 class SimpleStudentSerializerForLog(serializers.ModelSerializer):
 
     class Meta:
         model = Student
-        fields = [
-            "id",
-            "first_name",
-            "last_name"
-        ]
+        fields = ["id", "first_name", "last_name"]
 
 
 class LogSerializer(serializers.ModelSerializer):
     guardian = SimpleGuardianSerializerForLog()
     staff = SimpleStaffSerializerForLog()
     student = SimpleStudentSerializerForLog()
+
     class Meta:
         model = Log
         fields = [

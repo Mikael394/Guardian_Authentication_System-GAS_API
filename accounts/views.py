@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework.permissions import IsAdminUser
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import status
@@ -5,9 +6,9 @@ from rest_framework.decorators import action
 
 from rest_framework.response import Response
 from .permission import IsAdminOrReadOnly
-from .serializer import StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer
+from .serializer import ContactBookSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy
-from .models import Student,Guardian,Staff,Log
+from .models import ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Staff,Log, Video
 from PIL import Image
 from io import BytesIO
 from rest_framework.exceptions import ValidationError
@@ -21,7 +22,57 @@ class StaffView(ModelViewSet):
     serializer_class = StaffSerializer
     # permission_classes = [IsAdminUser]
 
+class ParentView(ModelViewSet):
+    queryset = Parent.objects.all()
+    serializer_class = ParentSerializer
+
+class HomeRoomTeacherView(ModelViewSet):
+    queryset = HomeRoomTeacher.objects.all()
+    serializer_class = HomeRoomTeacherSerializer
+
+class GradeAndSectionView(ModelViewSet):
+    queryset = GradeAndSection.objects.all()
+    serializer_class = GradeAndSectionSerializer
+
+class ContactBookView(ModelViewSet):
+    queryset = ContactBook.objects.all()
+    serializer_class = ContactBookSerializer
+
+class VideoListCreate(ModelViewSet):
+    queryset = Video.objects.all()
+    serializer_class = VideoSerializer
+
+class ContactBookViewNested(ModelViewSet):
+    queryset = ContactBook.objects.all()
+    serializer_class = ContactBookSerializerNested
+
+    def get_serializer_context(self):
+        return {"student_id": self.kwargs["student_pk"]}
+
+    def get_queryset(self):
+        return ContactBook.objects.filter(student__id=self.kwargs["student_pk"])
+
+    def perform_create(self, serializer):
+        student = Student.objects.get(id = self.kwargs["student_pk"])
+        hrt = HomeRoomTeacher.objects.get(user__id="fdc3d8ff-6a60-43d7-bfa1-9787b05be344")
+        print(hrt)
+        
+        # Validate and set the student_id and user_photo before saving the instance
+        serializer.validated_data["student"] = student
+        serializer.validated_data["home_room_teacher"] = hrt
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     
+    # def perform_destroy(self, instance):
+    #     student_id = self.kwargs["student_pk"]
+
+    #     # Remove the association between the guardian and the student
+    #     instance.students.remove(student_id)
+
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class GuardianView(ModelViewSet):
@@ -116,6 +167,13 @@ class GuardianViewNested(ModelViewSet):
                 status=status.HTTP_200_OK,
             )
 
+def save_video(request):
+    if request.method == 'POST' and request.FILES['video']:
+        video_file = request.FILES['video']
+        Video.objects.create(video_file=video_file)
+        return JsonResponse({'message': 'Video saved successfully'}, status=200)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
 
 class StudentView(ModelViewSet):
     queryset = Student.objects.all()
@@ -181,10 +239,10 @@ class Verify(ModelViewSet):
     def create_log(self, request, *args, **kwargs):
         student_id = request.data.get("student_id")
         guardian_id = request.data.get("guardian_id")
-        staff_id = request.data.get("guardian_id")
+        # staff_id = request.data.get("guardian_id")
         student = Student.objects.get(id=student_id)
         guardian = Guardian.objects.get(id=guardian_id)
-        staff = Staff.objects.get(user__id=staff_id)
+        staff = Staff.objects.get(user__id="1108958c-4e9f-41f4-b44e-3c30c5800644")
 
         try:
             log = Log.objects.create(student=student, guardian=guardian, staff=staff)
