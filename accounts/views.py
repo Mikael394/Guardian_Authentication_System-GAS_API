@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 
 from rest_framework.response import Response
 from .permission import IsAdminOrReadOnly
-from .serializer import ContactBookSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
+from .serializer import ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy
 from .models import ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Staff,Log, Video
 from PIL import Image
@@ -14,7 +14,60 @@ from io import BytesIO
 from rest_framework.exceptions import ValidationError
 from django.core.files.base import ContentFile
 
+from . security_camera import record_and_upload_video
 
+
+
+from django.http import JsonResponse
+from rest_framework import permissions
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+# from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+# from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+from .serializer import NoteSerializer
+from .models import Note
+
+
+
+# class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+#     @classmethod
+#     def get_token(cls, user):
+#         token = super().get_token(user)
+
+#         # Add custom claims
+#         token['username'] = user.username
+#         # ...
+
+#         return token
+
+
+# class MyTokenObtainPairView(TokenObtainPairView):
+#     serializer_class = MyTokenObtainPairSerializer
+
+# @api_view(['GET'])
+# def getRoutes(request):
+
+#     routes = [
+#         '/token',
+#         '/token/refresh',
+#     ]
+
+#     return Response(routes)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getNotes(request):
+    print(request.user)
+    user = request.user
+    notes = user.note_set.all()
+    serializer = NoteSerializer(notes, many=True)
+    print(request.user.id)
+    return Response(serializer.data)
 
 
 class StaffView(ModelViewSet):
@@ -25,6 +78,7 @@ class StaffView(ModelViewSet):
 class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
+        
 
 class HomeRoomTeacherView(ModelViewSet):
     queryset = HomeRoomTeacher.objects.all()
@@ -176,6 +230,7 @@ def save_video(request):
 
 
 class StudentView(ModelViewSet):
+
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 

@@ -1,8 +1,12 @@
+
 from django.urls import path, include
-from .views import ContactBookView, ContactBookViewNested, GradeAndSectionView, HomeRoomTeacherView, ParentView, StudentView,GuardianView,StaffView,Verify,LogView,StudentViewNested,GuardianViewNested,LogViewNested, VideoListCreate, save_video
+from .views import ContactBookView, ContactBookViewNested, GradeAndSectionView, HomeRoomTeacherView, ParentView, StudentView,GuardianView,StaffView,Verify,LogView,StudentViewNested,GuardianViewNested,LogViewNested, VideoListCreate, getNotes
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_nested import routers
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+)
 
 router = routers.DefaultRouter()
 
@@ -32,7 +36,11 @@ urlpatterns = [
     path("", include(router.urls)),
     path("", include(student_router.urls)),
     path("", include(guardian_router.urls)),
-    path('save-video', save_video, name='save_video')
+    path('notes', getNotes),
+    # path('api/', getRoutes),
+    # path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
 ]
 
 if settings.DEBUG:

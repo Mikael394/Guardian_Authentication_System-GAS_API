@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactBook, GradeAndSection, Guardian, HomeRoomTeacher,Student,Log,User,Staff,Parent
+from .models import ContactBook, GradeAndSection, Guardian, HomeRoomTeacher, Note,Student,Log,User,Staff,Parent, Video
 # Register your models here.
 @admin.register(Guardian)
 class GuardianAdmin(admin.ModelAdmin):
@@ -36,3 +36,5 @@ admin.site.register(Parent)
 admin.site.register(GradeAndSection)
 admin.site.register(HomeRoomTeacher)
 admin.site.register(ContactBook)
+admin.site.register(Video)
+admin.site.register(Note)

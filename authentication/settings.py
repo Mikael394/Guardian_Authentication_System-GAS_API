@@ -29,6 +29,7 @@ SECRET_KEY = "django-insecure-re%tlt^5aer_y08*!%f29#7y5dm9hv5#*(2z3l0&!&r0z%23)n
 DEBUG = True
 # '192.168.1.6','127.0.0.1'
 ALLOWED_HOSTS = [
+    "192.168.140.131",
     "192.168.1.9",
     "127.0.0.1",
     "10.42.0.1",
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     "djoser",
     "debug_toolbar",
     "accounts",
+    'rest_framework_simplejwt.token_blacklist',
     "rest_framework",
     "corsheaders",
 ]
@@ -70,7 +72,7 @@ MIDDLEWARE = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    # "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -112,7 +114,17 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#      'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'GAS',
+#         'USER': 'root',  # Your MySQL username
+#         'PASSWORD': '',  # Your MySQL password
+#         'HOST': '127.0.0.1',  # IP address of your MySQL server (usually localhost)
+#         'PORT': '3306',  # Port on which MySQL server is running (default is 3306)
+#     }
 
+# }
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -163,7 +175,37 @@ DJOSER = {
         
     }
 }
+# SIMPLE_JWT = {
+#     "AUTH_HEADER_TYPES": ("JWT",),
+#     "ACCESS_TOKEN_LIFETIME": timedelta(days=1)
+# }
+
 SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ("JWT",),
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1)
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': 'HS256',
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }

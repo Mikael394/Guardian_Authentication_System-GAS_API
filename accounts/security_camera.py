@@ -1,33 +1,48 @@
 import cv2
-from django.core.files.base import ContentFile
-from models import Video
-import numpy as np
+import os
+import tempfile
+from django.core.files import File
+from accounts.models import Video  # Import your Django model
 
-cap = cv2.VideoCapture(0)
+def record_and_upload_video():
+    # OpenCV Video Capture
+    cap = cv2.VideoCapture(0)  # 0 for default camera
 
-# Initialize a variable to store the video frames
-video_frames = []
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))  # Change resolution if needed
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
-    
-    # Convert frame to bytes
-    _, buffer = cv2.imencode('.jpg', frame)
-    frame_bytes = buffer.tobytes()
-    video_frames.append(frame_bytes)
+    # Record video for 10 seconds
+    seconds_to_record = 10
+    while cap.isOpened() and seconds_to_record > 0:
+        ret, frame = cap.read()
+        if ret:
+            out.write(frame)
+            seconds_to_record -= 1
+        else:
+            break
 
-    cv2.imshow('frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    # Release everything if job is finished
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
 
-# Convert list of frame bytes to a single byte array
-video_data = b''.join(video_frames)
+    # Save video file to Django database
+    with open('output.avi', 'rb') as f:
+        video_temp = tempfile.NamedTemporaryFile(delete=True)
+        video_temp.write(f.read())
+        video_temp.flush()
+        video_model = Video()
+        video_model.file.save('output.avi', File(video_temp), save=True)
 
-cap.release()
-cv2.destroyAllWindows()
+    # Clean up temporary file
+    os.remove('output.avi')
 
-# Create a Video instance and save the video data to it
-video = Video()
-video.file.save('my_video.mp4', ContentFile(video_data), save=True)
+    print("Video recorded and uploaded successfully!")
+
+# Example Django model
+# Assuming you have a model named Video with a field 'video_field' to store the video
+# class Video(models.Model):
+#     video_field = models.FileField(upload_to='videos/')
+
+# Call the function

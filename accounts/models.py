@@ -31,6 +31,9 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+class Note(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    body = models.TextField()
 
 class Guardian(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -38,6 +41,8 @@ class Guardian(models.Model):
     last_name = models.CharField(max_length=255)
     username = models.CharField(max_length=50, unique=True)
     user_photo = models.ImageField(upload_to="guardian_faces")
+    user_photo_2 = models.ImageField(upload_to="guardian_faces", null=True)
+    user_photo_3 = models.ImageField(upload_to="guardian_faces", null=True)
     phone_number = models.CharField(max_length=15, null=True)
     GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS, null=True)
@@ -62,7 +67,6 @@ class Guardian(models.Model):
 
 class HomeRoomTeacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-
 
     # def save(self, *args, **kwargs):
     #     super().save(*args, **kwargs)
@@ -95,7 +99,7 @@ class Student(models.Model):
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     image = models.ImageField(upload_to="students/", null=True)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
-    parents = models.ManyToManyField("Parent",related_name="students", blank=True)
+    parents = models.ForeignKey(Parent, on_delete = models.CASCADE, blank=True)
     is_present = models.BooleanField(default=False)
 
     def __str__(self):

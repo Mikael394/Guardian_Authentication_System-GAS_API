@@ -7,6 +7,7 @@ from .models import (
     ContactBook,
     GradeAndSection,
     HomeRoomTeacher,
+    Note,
     Parent,
     Student,
     Guardian,
@@ -39,18 +40,33 @@ class SimpleStudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = ["id", "first_name", "last_name", "grade", "is_present", "image"]
 
-
-class UserSerializer(BaseUserSerializer):
-    class Meta(BaseUserSerializer.Meta):
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
         fields = [
             "id",
             "first_name",
             "last_name",
             "username",
-            "is_staff",
-            "is_superuser",
             "email",
+            "phone_number",
+            "gender",
+            "date_of_birth",
+            "password",
         ]
+
+
+# class UserSerializer(BaseUserSerializer):
+#     class Meta(BaseUserSerializer.Meta):
+#         fields = [
+#             "id",
+#             "first_name",
+#             "last_name",
+#             "username",
+#             "is_staff",
+#             "is_superuser",
+#             "email",
+#         ]
 
 
 class GuardianSerializer(serializers.ModelSerializer):
@@ -83,12 +99,32 @@ class HomeRoomTeacherSerializer(serializers.ModelSerializer):
 
 
 class ParentSerializer(serializers.ModelSerializer):
-    user_id = serializers.UUIDField()
+    # user_id = serializers.UUIDField()
+    user = UserCreateSerializer()
 
     class Meta:
         model = Parent
-        fields = ["user_id", "user_photo"]
+        fields = ["user", "user_photo"]
 
+    def create(self, validated_data):
+        print(validated_data)
+        user_data = validated_data.pop('user')
+        user = User.objects.create(**user_data)
+        Parent.objects.create(user=user, **validated_data)
+        return user
+
+# class ParentSerializer(serializers.ModelSerializer):
+#     parent = ParentSerializerUser()
+
+#     class Meta:
+#         model = User  # Assuming User is your parent model
+#         fields = ('id', 'username', 'email', 'password', 'parent')
+
+#     def create(self, validated_data):
+#         guardian_data = validated_data.pop('guardian')
+#         user = User.objects.create(**validated_data)
+#         Guardian.objects.create(user=user, **guardian_data)
+#         return user
 
 class ContactBookSerializer(serializers.ModelSerializer):
 
@@ -259,3 +295,10 @@ class LogSerializer(serializers.ModelSerializer):
             "date_time",
             "action",
         ]
+
+
+
+class NoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        fields = '__all__'
