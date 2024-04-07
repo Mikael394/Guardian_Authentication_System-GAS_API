@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser,IsAuthenticated
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import status
 from rest_framework.decorators import action
@@ -230,10 +230,10 @@ def save_video(request):
 
 
 class StudentView(ModelViewSet):
-
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
+    
 
 class StudentViewNested(ModelViewSet):
     queryset = Student.objects.all()

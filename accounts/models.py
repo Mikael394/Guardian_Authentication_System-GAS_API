@@ -9,7 +9,7 @@ class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=200, unique=True)
     phone_number = models.CharField(max_length=15)
-    
+    is_parent = models.BooleanField(default=False)
     GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     date_of_birth = models.DateField(default=date.today)
@@ -68,18 +68,16 @@ class Guardian(models.Model):
 class HomeRoomTeacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
 
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-    #     processed_img = extract_face_haar_cascade(self.user_photo.path)
-    #     pil_image = Image.fromarray(processed_img)
-    #     pil_image.save(self.user_photo.path)
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
 
 class Parent(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,primary_key=True)
     user_photo = models.ImageField(upload_to="parents photo")
 
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+    
 class GradeAndSection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     grade = models.CharField(max_length=20)

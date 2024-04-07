@@ -16,6 +16,7 @@ from .models import (
     User,
     Video,
 )
+from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
 
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -112,7 +113,6 @@ class HomeRoomTeacherSerializer(serializers.ModelSerializer):
 
 
 class ParentSerializer(serializers.ModelSerializer):
-    # user_id = serializers.UUIDField()
     user = UserCreateSerializer()
 
     class Meta:
@@ -120,24 +120,16 @@ class ParentSerializer(serializers.ModelSerializer):
         fields = ["user", "user_photo"]
 
     def create(self, validated_data):
-        print(validated_data)
         user_data = validated_data.pop('user')
-        user = User.objects.create(**user_data)
-        Parent.objects.create(user=user, **validated_data)
-        return user
+        djoser_user_serializer = DjoserUserCreateSerializer(data=user_data)
+        djoser_user_serializer.is_valid(raise_exception=True)
+        user = djoser_user_serializer.save()
+        user.is_parent =True
+        user.save()
+        parent=Parent.objects.create(user=user, **validated_data)
+        return parent
 
-# class ParentSerializer(serializers.ModelSerializer):
-#     parent = ParentSerializerUser()
 
-#     class Meta:
-#         model = User  # Assuming User is your parent model
-#         fields = ('id', 'username', 'email', 'password', 'parent')
-
-#     def create(self, validated_data):
-#         guardian_data = validated_data.pop('guardian')
-#         user = User.objects.create(**validated_data)
-#         Guardian.objects.create(user=user, **guardian_data)
-#         return user
 
 class ContactBookSerializer(serializers.ModelSerializer):
 
