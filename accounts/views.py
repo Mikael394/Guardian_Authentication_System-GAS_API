@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 
 from rest_framework.response import Response
 from .permission import IsAdminOrReadOnly
-from .serializer import ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
+from .serializer import ContactBookSerializer, CustomTokenObtainPairSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy
 from .models import ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Staff,Log, Video
 from PIL import Image
@@ -25,7 +25,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 # from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-# from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 from .serializer import NoteSerializer
@@ -45,8 +45,8 @@ from .models import Note
 #         return token
 
 
-# class MyTokenObtainPairView(TokenObtainPairView):
-#     serializer_class = MyTokenObtainPairSerializer
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 # @api_view(['GET'])
 # def getRoutes(request):
