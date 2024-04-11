@@ -10,6 +10,8 @@ class User(AbstractUser):
     email = models.EmailField(max_length=200, unique=True)
     phone_number = models.CharField(max_length=15)
     is_parent = models.BooleanField(default=False)
+    is_hrt = models.BooleanField(default=False)
+    is_authenticator = models.BooleanField(default=False)
     GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     date_of_birth = models.DateField(default=date.today)
@@ -30,10 +32,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-
-class Note(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    body = models.TextField()
 
 class Guardian(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -74,6 +72,8 @@ class HomeRoomTeacher(models.Model):
 class Parent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,primary_key=True)
     user_photo = models.ImageField(upload_to="parents photo")
+    RELATION = [("Father","Father"),("Mother","Mother")]
+    relation = models.CharField(max_length=7,choices=RELATION)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
@@ -81,11 +81,10 @@ class Parent(models.Model):
 class GradeAndSection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     grade = models.CharField(max_length=20)
-    section = models.CharField(max_length=2)
     home_room_teacher = models.OneToOneField(HomeRoomTeacher,on_delete = models.CASCADE, null = True, blank = True)
 
     def __str__(self):
-        return f"{self.grade} {self.section}"
+        return f"{self.grade}"
 
 class Student(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -97,14 +96,14 @@ class Student(models.Model):
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     image = models.ImageField(upload_to="students/", null=True)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
-    parents = models.ForeignKey(Parent, on_delete = models.CASCADE, blank=True)
+    parent = models.ForeignKey(Parent, on_delete = models.CASCADE, null =True,blank=True)
     is_present = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
     
 
-class Staff(models.Model):
+class Authenticator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     role = models.CharField(max_length=50)
 
@@ -132,7 +131,9 @@ class ContactBook(models.Model):
     teacher_comment = models.TextField()
     parent_comment = models.TextField()
 
-    is_read = models.BooleanField(default=False)
+    is_read_p = models.BooleanField(default=False)
+    is_read_t = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"{self.student} - {self.date_time}"
@@ -141,7 +142,7 @@ class Log(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     guardian = models.ForeignKey(Guardian, on_delete=models.CASCADE)
-    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    authenticator = models.ForeignKey(Authenticator, on_delete=models.CASCADE)
     date_time = models.DateTimeField(auto_now=True)
     action = models.CharField(max_length=50, default="Picked Up")
 

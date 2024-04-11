@@ -1,6 +1,6 @@
 
 from django.urls import path, include
-from .views import ContactBookView, ContactBookViewNested, GradeAndSectionView, HomeRoomTeacherView, ParentView, StudentView,GuardianView,StaffView,Verify,LogView,StudentViewNested,GuardianViewNested,LogViewNested, VideoListCreate, getNotes
+from .views import ContactBookView, ContactBookViewNested, GradeAndSectionView, HomeRoomTeacherView, ParentView, StudentView,GuardianView,AuthenticatorView,Verify,LogView,StudentViewNested,GuardianViewNested,LogViewNested, VideoListCreate, getNotes
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_nested import routers
@@ -12,7 +12,7 @@ router = routers.DefaultRouter()
 
 router.register("students", StudentView, basename="students")
 router.register("guardians", GuardianView, basename="guardians")
-router.register("staff", StaffView)
+router.register("authenticator", AuthenticatorView)
 router.register("verify", Verify)
 router.register("logs", LogView)
 router.register("parents", ParentView)

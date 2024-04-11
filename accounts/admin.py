@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactBook, GradeAndSection, Guardian, HomeRoomTeacher, Note,Student,Log,User,Staff,Parent, Video
+from .models import ContactBook, GradeAndSection, Guardian, HomeRoomTeacher,Student,Log,User,Authenticator,Parent, Video
 # Register your models here.
 @admin.register(Guardian)
 class GuardianAdmin(admin.ModelAdmin):
@@ -24,17 +24,16 @@ class StudentAdmin(admin.ModelAdmin):
             return "Absent"
 @admin.register(Log)
 class LogAdmin(admin.ModelAdmin):
-    list_display = ["student","guardian","staff","date_time","action"]
+    list_display = ["student","guardian","authenticator","date_time","action"]
     # list_editable = ["present"]
     # ordering = []
     # list_per_page = 10
-    search_fields = ["student__istartswith","guardian__istartswith","staff__istartswith","date_time"]
+    search_fields = ["student__istartswith","guardian__istartswith","authenticator__istartswith","date_time"]
 
 admin.site.register(User)
-admin.site.register(Staff)
+admin.site.register(Authenticator)
 admin.site.register(Parent)
 admin.site.register(GradeAndSection)
 admin.site.register(HomeRoomTeacher)
 admin.site.register(ContactBook)
 admin.site.register(Video)
-admin.site.register(Note)

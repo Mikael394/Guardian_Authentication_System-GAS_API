@@ -6,9 +6,9 @@ from rest_framework.decorators import action
 
 from rest_framework.response import Response
 from .permission import IsAdminOrReadOnly
-from .serializer import ContactBookSerializer, CustomTokenObtainPairSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, StaffSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
+from .serializer import ContactBookSerializer, CustomTokenObtainPairSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy
-from .models import ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Staff,Log, Video
+from .models import ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, Video
 from PIL import Image
 from io import BytesIO
 from rest_framework.exceptions import ValidationError
@@ -28,8 +28,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 
-from .serializer import NoteSerializer
-from .models import Note
 
 
 
@@ -70,9 +68,9 @@ def getNotes(request):
     return Response(serializer.data)
 
 
-class StaffView(ModelViewSet):
-    queryset = Staff.objects.all()
-    serializer_class = StaffSerializer
+class AuthenticatorView(ModelViewSet):
+    queryset = Authenticator.objects.all()
+    serializer_class = AuthenticatorSerializer
     # permission_classes = [IsAdminUser]
 
 class ParentView(ModelViewSet):
@@ -294,13 +292,13 @@ class Verify(ModelViewSet):
     def create_log(self, request, *args, **kwargs):
         student_id = request.data.get("student_id")
         guardian_id = request.data.get("guardian_id")
-        # staff_id = request.data.get("guardian_id")
+        # Authenticator_id = request.data.get("guardian_id")
         student = Student.objects.get(id=student_id)
         guardian = Guardian.objects.get(id=guardian_id)
-        staff = Staff.objects.get(user__id="1108958c-4e9f-41f4-b44e-3c30c5800644")
+        authenticator = Authenticator.objects.get(user__id="1108958c-4e9f-41f4-b44e-3c30c5800644")
 
         try:
-            log = Log.objects.create(student=student, guardian=guardian, staff=staff)
+            log = Log.objects.create(student=student, guardian=guardian, authenticator=authenticator)
             student.is_present = False
             student.save()
             return Response(
