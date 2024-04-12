@@ -1,72 +1,18 @@
-from django.http import JsonResponse
-from rest_framework.permissions import IsAdminUser,IsAuthenticated
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework import status
-from rest_framework.decorators import action
-
-from rest_framework.response import Response
-from .permission import IsAdminOrReadOnly
-from .serializer import ContactBookSerializer, CustomTokenObtainPairSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
-from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy
-from .models import ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, Video
-from PIL import Image
 from io import BytesIO
-from rest_framework.exceptions import ValidationError
-from django.core.files.base import ContentFile
-
-from . security_camera import record_and_upload_video
-
-
-
 from django.http import JsonResponse
-from rest_framework import permissions
+from django.core.files.base import ContentFile
+from rest_framework import permissions,status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes,action
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
+from rest_framework.exceptions import ValidationError
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from PIL import Image
 
-# from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-
-
-
-
-
-# class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-#     @classmethod
-#     def get_token(cls, user):
-#         token = super().get_token(user)
-
-#         # Add custom claims
-#         token['username'] = user.username
-#         # ...
-
-#         return token
-
-
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
-
-# @api_view(['GET'])
-# def getRoutes(request):
-
-#     routes = [
-#         '/token',
-#         '/token/refresh',
-#     ]
-
-#     return Response(routes)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getNotes(request):
-    print(request.user)
-    user = request.user
-    notes = user.note_set.all()
-    serializer = NoteSerializer(notes, many=True)
-    print(request.user.id)
-    return Response(serializer.data)
-
+from .permission import IsAdminOrReadOnly
+from .serializer import AttendanceSerializer, ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
+from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy
+from .models import Attendance, ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, Video
 
 class AuthenticatorView(ModelViewSet):
     queryset = Authenticator.objects.all()
@@ -116,16 +62,6 @@ class ContactBookViewNested(ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    
-    # def perform_destroy(self, instance):
-    #     student_id = self.kwargs["student_pk"]
-
-    #     # Remove the association between the guardian and the student
-    #     instance.students.remove(student_id)
-
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 
 class GuardianView(ModelViewSet):
     queryset = Guardian.objects.all()
@@ -134,8 +70,8 @@ class GuardianView(ModelViewSet):
 class LogViewNested(ModelViewSet):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
+    #permission_classes = [IsAdminOrReadOnly]
 
-    # # permission_classes = [IsAdminOrReadOnly]
     def get_serializer_context(self):
         print(self.kwargs)
         return {"student_id": self.kwargs["student_pk"]}
@@ -148,8 +84,8 @@ class LogViewNested(ModelViewSet):
 class GuardianViewNested(ModelViewSet):
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializerNested
+    # permission_classes = [IsAdminOrReadOnly]
 
-    # # permission_classes = [IsAdminOrReadOnly]
     def get_serializer_context(self):
         return {"student_id": self.kwargs["student_pk"]}
 
@@ -219,19 +155,10 @@ class GuardianViewNested(ModelViewSet):
                 status=status.HTTP_200_OK,
             )
 
-def save_video(request):
-    if request.method == 'POST' and request.FILES['video']:
-        video_file = request.FILES['video']
-        Video.objects.create(video_file=video_file)
-        return JsonResponse({'message': 'Video saved successfully'}, status=200)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
-
 
 class StudentView(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-
-    
 
 class StudentViewNested(ModelViewSet):
     queryset = Student.objects.all()
@@ -312,6 +239,23 @@ class Verify(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+class AttendanceView(ModelViewSet):
+    queryset = Attendance.objects.all()
+    serializer_class = AttendanceSerializer
+    
+class AttendanceViewNested(ModelViewSet):
+    queryset = Attendance.objects.all()
+    serializer_class = AttendanceSerializer
+    
+    def get_serializer_context(self):
+        
+        return {"grade_id": self.kwargs["grade_pk"]}
+    
+    def get_queryset(self):
+        return Attendance.objects.filter(grade__id=self.kwargs["grade_pk"])
+
+    
+    
 
 class LogView(ReadOnlyModelViewSet):
     queryset = Log.objects.all()

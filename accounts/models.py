@@ -1,4 +1,3 @@
-from email.policy import default
 from django.db import models
 import uuid
 from datetime import date
@@ -101,7 +100,21 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+class Attendance(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date = models.DateField(auto_now=True)
+    grade = models.ForeignKey(GradeAndSection, on_delete=models.CASCADE)
+    students = models.ForeignKey(Student,on_delete=models.CASCADE)
+    ATTENDANCE_CHOICES = [
+        ('P', 'Present'),
+        ('A', 'Absent'),
+        ('L', 'Late'),
+    ]
+    status = models.CharField(max_length=8, choices=ATTENDANCE_CHOICES)
     
+    def __str__(self):
+        return f"{self.date}"
 
 class Authenticator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)

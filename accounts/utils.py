@@ -1,10 +1,11 @@
+from io import BytesIO
 import face_recognition
 import cv2
 import numpy as np
 import os
 from django.conf import settings
 from PIL import Image
-from io import BytesIO
+
 
 temp_path = os.path.join(settings.BASE_DIR, "media/temp/temp.jpg")
 

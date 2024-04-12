@@ -4,6 +4,7 @@ from djoser.serializers import (
     UserCreateSerializer as BaseUserCreateSerializer,
 )
 from .models import (
+    Attendance,
     ContactBook,
     GradeAndSection,
     HomeRoomTeacher,
@@ -15,21 +16,6 @@ from .models import (
     User,
     Video,
 )
-from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
-
-
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-
-        # Add custom claims to the token
-        token['username'] = user.username  # Add username to the token payload
-
-        return token
-    
 
 class UserCreateSerializer(BaseUserCreateSerializer):
     class Meta(BaseUserCreateSerializer.Meta):
@@ -60,31 +46,15 @@ class UserSerializer(BaseUserSerializer):
         ]
 
 class SimpleStudentSerializer(serializers.ModelSerializer):
-    # guardians = GuardianSerializer(many=True)
 
     class Meta:
         model = Student
         fields = ["id", "first_name", "last_name", "grade", "is_present", "image"]
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            "id",
-            "first_name",
-            "last_name",
-            "username",
-            "email",
-            "phone_number",
-            "gender",
-            "date_of_birth",
-            "password",
-        ]
 
 
 
 class GuardianSerializer(serializers.ModelSerializer):
-    # students = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     students = SimpleStudentSerializer(many=True, required=False)
 
     class Meta:
@@ -172,8 +142,6 @@ class ContactBookSerializerNested(serializers.ModelSerializer):
         model = ContactBook
         fields = [
             "id",
-            # "student",
-            # "home_room_teacher",
             "date_time",
             "parents_follow_up",
             "hand_writing",
@@ -242,7 +210,6 @@ class GuardianVerifySerializer(serializers.ModelSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
-    # guardians = serializers.ListField(child=serializers.JSONField(), required=False)
     guardians = SimpleGuardianSerializer(many=True, required=False)
 
     class Meta:
@@ -277,17 +244,6 @@ class AuthenticatorSerializer(serializers.ModelSerializer):
         authenticator=Authenticator.objects.create(user=user, **validated_data)
         return authenticator
 
-
-# class GuardianVerifySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Guardian
-#         fields = [
-#             "id",
-#             "username",
-#             "user_photo",
-#         ]
-
-
 class SimpleGuardianSerializerForLog(serializers.ModelSerializer):
     class Meta:
         model = Guardian
@@ -308,6 +264,15 @@ class SimpleStudentSerializerForLog(serializers.ModelSerializer):
         model = Student
         fields = ["id", "first_name", "last_name"]
 
+class AttendanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attendance
+        fields = ["students","grade","date"]
+
+class AttendanceSerializerNested(serializers.ModelSerializer):
+    class Meta:
+        model = Attendance
+        fields = ["students","date"]
 
 class LogSerializer(serializers.ModelSerializer):
     guardian = SimpleGuardianSerializerForLog()
