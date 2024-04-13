@@ -92,7 +92,7 @@ class Student(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
-    grade_and_section = models.ForeignKey(GradeAndSection, on_delete = models.CASCADE)
+    grade = models.ForeignKey(GradeAndSection, on_delete = models.CASCADE)
     GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     image = models.ImageField(upload_to="students/", null=True)

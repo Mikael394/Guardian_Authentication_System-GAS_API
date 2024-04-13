@@ -234,7 +234,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "last_name",
             "date_of_birth",
             "gender",
-            "grade_and_section",
+            "grade",
             "guardians",
             "parents"
         ]
