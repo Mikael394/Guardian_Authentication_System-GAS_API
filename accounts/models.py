@@ -37,7 +37,7 @@ class Guardian(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     username = models.CharField(max_length=50, unique=True)
-    user_photo = models.ImageField(upload_to="guardian_faces")
+    user_photo_1 = models.ImageField(upload_to="guardian_faces")
     user_photo_2 = models.ImageField(upload_to="guardian_faces", null=True)
     user_photo_3 = models.ImageField(upload_to="guardian_faces", null=True)
     phone_number = models.CharField(max_length=15, null=True)
@@ -70,7 +70,9 @@ class HomeRoomTeacher(models.Model):
 
 class Parent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,primary_key=True)
-    user_photo = models.ImageField(upload_to="parents photo")
+    user_photo_1 = models.ImageField(upload_to="guardian_faces")
+    user_photo_2 = models.ImageField(upload_to="guardian_faces", null=True)
+    user_photo_3 = models.ImageField(upload_to="guardian_faces", null=True)
     RELATION = [("Father","Father"),("Mother","Mother")]
     relation = models.CharField(max_length=7,choices=RELATION)
 
@@ -95,7 +97,7 @@ class Student(models.Model):
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     image = models.ImageField(upload_to="students/", null=True)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
-    parent = models.ForeignKey(Parent, on_delete = models.CASCADE, null =True,blank=True)
+    parents = models.ManyToManyField("Parent", related_name="students",blank=True)
     is_present = models.BooleanField(default=False)
 
     def __str__(self):

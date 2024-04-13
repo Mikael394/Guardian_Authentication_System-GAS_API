@@ -3,7 +3,7 @@ from .models import Attendance, ContactBook, GradeAndSection, Guardian, HomeRoom
 # Register your models here.
 @admin.register(Guardian)
 class GuardianAdmin(admin.ModelAdmin):
-    list_display = ["username","phone_number","user_photo"]
+    list_display = ["username","phone_number","user_photo_1"]
     # list_editable = ["is_active"]
     # ordering = []
     # list_per_page = 10

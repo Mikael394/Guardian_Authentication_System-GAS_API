@@ -17,6 +17,7 @@ from .models import (
     Video,
 )
 
+
 class UserCreateSerializer(BaseUserCreateSerializer):
     class Meta(BaseUserCreateSerializer.Meta):
         fields = [
@@ -30,6 +31,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "date_of_birth",
             "password",
         ]
+
 
 class UserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
@@ -45,13 +47,12 @@ class UserSerializer(BaseUserSerializer):
             "password",
         ]
 
+
 class SimpleStudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Student
         fields = ["id", "first_name", "last_name", "grade", "is_present", "image"]
-
-
 
 
 class GuardianSerializer(serializers.ModelSerializer):
@@ -62,7 +63,6 @@ class GuardianSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "username",
-            "user_photo",
             "first_name",
             "last_name",
             "gender",
@@ -71,6 +71,9 @@ class GuardianSerializer(serializers.ModelSerializer):
             "phone_number",
             "relationship",
             "students",
+            "user_photo_1",
+            "user_photo_2",
+            "user_photo_3",
         ]
 
 
@@ -81,17 +84,15 @@ class HomeRoomTeacherSerializer(serializers.ModelSerializer):
         model = HomeRoomTeacher
         fields = ["user"]
 
-    
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
+        user_data = validated_data.pop("user")
         user_serializer = UserCreateSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
-        user.is_hrt =True
+        user.is_hrt = True
         user.save()
-        hrt=HomeRoomTeacher.objects.create(user=user, **validated_data)
+        hrt = HomeRoomTeacher.objects.create(user=user, **validated_data)
         return hrt
-
 
 
 class ParentSerializer(serializers.ModelSerializer):
@@ -99,18 +100,23 @@ class ParentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Parent
-        fields = ["user", "user_photo"]
+        fields = [
+            "user",
+            "user_photo_1",
+            "user_photo_2",
+            "user_photo_3",
+            "students"
+        ]
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
+        user_data = validated_data.pop("user")
         user_serializer = UserCreateSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
-        user.is_parent =True
+        user.is_parent = True
         user.save()
-        parent=Parent.objects.create(user=user, **validated_data)
+        parent = Parent.objects.create(user=user, **validated_data)
         return parent
-
 
 
 class ContactBookSerializer(serializers.ModelSerializer):
@@ -133,8 +139,9 @@ class ContactBookSerializer(serializers.ModelSerializer):
             "teacher_comment",
             "parent_comment",
             "is_read_p",
-            "is_read_t"
+            "is_read_t",
         ]
+
 
 class ContactBookSerializerNested(serializers.ModelSerializer):
 
@@ -154,13 +161,15 @@ class ContactBookSerializerNested(serializers.ModelSerializer):
             "teacher_comment",
             "parent_comment",
             "is_read_p",
-            "is_read_t"
+            "is_read_t",
         ]
+
 
 class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
-        fields = ('id', 'title', 'file', 'uploaded_at')
+        fields = ("id", "title", "file", "uploaded_at")
+
 
 class GradeAndSectionSerializer(serializers.ModelSerializer):
 
@@ -181,7 +190,9 @@ class GuardianSerializerNested(serializers.ModelSerializer):
             "gender",
             "date_of_birth",
             "address",
-            "user_photo",
+            "user_photo_1",
+            "user_photo_2",
+            "user_photo_3",
             "relationship",
         ]
 
@@ -192,7 +203,7 @@ class SimpleGuardianSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "username",
-            "user_photo",
+            "user_photo_1",
             "first_name",
             "last_name",
             "phone_number",
@@ -205,7 +216,9 @@ class GuardianVerifySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "username",
-            "user_photo",
+            "user_photo_1",
+            "user_photo_2",
+            "user_photo_3",
         ]
 
 
@@ -221,9 +234,9 @@ class StudentSerializer(serializers.ModelSerializer):
             "last_name",
             "date_of_birth",
             "gender",
-            "is_present",
             "grade_and_section",
             "guardians",
+            "parents"
         ]
 
 
@@ -235,14 +248,15 @@ class AuthenticatorSerializer(serializers.ModelSerializer):
         fields = ["user", "role"]
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
+        user_data = validated_data.pop("user")
         user_serializer = UserCreateSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
-        user.is_authenticator =True
+        user.is_authenticator = True
         user.save()
-        authenticator=Authenticator.objects.create(user=user, **validated_data)
+        authenticator = Authenticator.objects.create(user=user, **validated_data)
         return authenticator
+
 
 class SimpleGuardianSerializerForLog(serializers.ModelSerializer):
     class Meta:
@@ -264,15 +278,18 @@ class SimpleStudentSerializerForLog(serializers.ModelSerializer):
         model = Student
         fields = ["id", "first_name", "last_name"]
 
+
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ["students","grade","date"]
+        fields = ["students", "grade", "date"]
+
 
 class AttendanceSerializerNested(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ["students","date"]
+        fields = ["students", "date"]
+
 
 class LogSerializer(serializers.ModelSerializer):
     guardian = SimpleGuardianSerializerForLog()
@@ -289,5 +306,3 @@ class LogSerializer(serializers.ModelSerializer):
             "date_time",
             "action",
         ]
-
-

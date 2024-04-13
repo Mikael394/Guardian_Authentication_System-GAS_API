@@ -3,6 +3,7 @@ import face_recognition
 import cv2
 import numpy as np
 import os
+from django.core.files.base import ContentFile
 from django.conf import settings
 from PIL import Image
 
@@ -85,6 +86,17 @@ def extract_face_haar_cascade3(image):
         print(f"Error occurred: {e}")
         return None
 
+def process_image(user_photo):
+        user_photo_np = image_to_numpy(user_photo)
+        processed_img = extract_face_haar_cascade3(user_photo_np)
+
+        if processed_img is None:
+             return None
+        pil_image = Image.fromarray(processed_img)
+        image_io = BytesIO()
+        pil_image.save(image_io, format='JPEG')  # Adjust format based on your image format
+        return ContentFile(image_io.getvalue(), name='user_photo.jpg')  # Adjust the name as needed
+    
 
 def save_up(uploaded_image):
     try:

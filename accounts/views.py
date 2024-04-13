@@ -11,7 +11,7 @@ from PIL import Image
 
 from .permission import IsAdminOrReadOnly
 from .serializer import AttendanceSerializer, ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
-from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy
+from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy,process_image
 from .models import Attendance, ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, Video
 
 class AuthenticatorView(ModelViewSet):
@@ -22,7 +22,29 @@ class AuthenticatorView(ModelViewSet):
 class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
-        
+
+    def perform_create(self, serializer):
+        user_photos = [self.request.data["user_photo_1"].read(),self.request.data["user_photo_2"].read(),self.request.data["user_photo_3"].read()]
+        processed_img = []
+
+        for index, photo in enumerate(user_photos):
+            pr_image = process_image(photo)
+            if pr_image is None:
+                raise ValidationError({"detail":f"No face found in the image_{index+1}"})
+            processed_img.append(pr_image)
+
+        # Validate and set the student_id and user_photo before saving the instance
+        serializer.validated_data["user_photo_1"] = processed_img[0]
+        serializer.validated_data["user_photo_2"] = processed_img[1]
+        serializer.validated_data["user_photo_3"] = processed_img[2]
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    
+
+
+      
 
 class HomeRoomTeacherView(ModelViewSet):
     queryset = HomeRoomTeacher.objects.all()
@@ -94,22 +116,20 @@ class GuardianViewNested(ModelViewSet):
 
     def perform_create(self, serializer):
         student_id = self.kwargs["student_pk"]
-        user_photo = self.request.data["user_photo"].read()
-        user_photo = image_to_numpy(user_photo)
-        processed_img = extract_face_haar_cascade3(user_photo)
+        user_photos = [self.request.data["user_photo_1"].read(),self.request.data["user_photo_2"].read(),self.request.data["user_photo_3"].read()]
+        processed_img = []
 
-        if processed_img is None:
-             raise ValidationError({"detail":"No face found in the image"})
-        pil_image = Image.fromarray(processed_img)
-
-        # Convert PIL Image to a file-like object
-        image_io = BytesIO()
-        pil_image.save(image_io, format='JPEG')  # Adjust format based on your image format
-        image_file = ContentFile(image_io.getvalue(), name='user_photo.jpg')  # Adjust the name as needed
+        for index, photo in enumerate(user_photos):
+            pr_image = process_image(photo)
+            if pr_image is None:
+                raise ValidationError({"detail":f"No face found in the image_{index+1}"})
+            processed_img.append(pr_image)
 
         # Validate and set the student_id and user_photo before saving the instance
         serializer.validated_data["students"] = [student_id]
-        serializer.validated_data["user_photo"] = image_file
+        serializer.validated_data["user_photo_1"] = processed_img[0]
+        serializer.validated_data["user_photo_2"] = processed_img[1]
+        serializer.validated_data["user_photo_3"] = processed_img[2]
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -159,6 +179,38 @@ class GuardianViewNested(ModelViewSet):
 class StudentView(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+
+    @action(detail=True, methods=["get", "post"])
+    def assign_parent(self, request, *args, **kwargs):
+        student_id = self.kwargs["pk"]
+        parent_id = request.data.get("parent_id")
+
+        if request.method == "GET":
+            # Return guardians that are not associated with the student
+            parents_list = Parent.objects.all()
+            serializer = ParentSerializer(parents_list, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            try:
+                parent = Parent.objects.get(user_id=parent_id)
+            except Parent.DoesNotExist:
+                return Response(
+                    {"detail": "Parent not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+            if parent.students.filter(id=student_id).exists():
+                return Response(
+                    {"detail": "Parent is already associated with the student"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Add the guardian to the student
+            parent.students.add(student_id)
+
+            # You can return a success response or the updated data as needed
+            return Response(
+                {"detail": "Parent added to student successfully"},
+                status=status.HTTP_200_OK,
+            )
 
 class StudentViewNested(ModelViewSet):
     queryset = Student.objects.all()
