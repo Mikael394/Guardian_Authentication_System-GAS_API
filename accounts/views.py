@@ -18,6 +18,13 @@ class AuthenticatorView(ModelViewSet):
     queryset = Authenticator.objects.all()
     serializer_class = AuthenticatorSerializer
     # permission_classes = [IsAdminUser]
+def are_the_same(processed_img):
+    c1 = compare(processed_img[0],processed_img[1])
+    c2 = compare(processed_img[0],processed_img[2])
+    c3 = compare(processed_img[1],processed_img[2])
+
+    return (c1 and c2 and c3)
+
 
 class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
@@ -32,14 +39,17 @@ class ParentView(ModelViewSet):
             if pr_image is None:
                 raise ValidationError({"detail":f"No face found in the image_{index+1}"})
             processed_img.append(pr_image)
+        if are_the_same(processed_img):
+            # Validate and set the student_id and user_photo before saving the instance
+            serializer.validated_data["user_photo_1"] = processed_img[0]
+            serializer.validated_data["user_photo_2"] = processed_img[1]
+            serializer.validated_data["user_photo_3"] = processed_img[2]
+            serializer.save()
 
-        # Validate and set the student_id and user_photo before saving the instance
-        serializer.validated_data["user_photo_1"] = processed_img[0]
-        serializer.validated_data["user_photo_2"] = processed_img[1]
-        serializer.validated_data["user_photo_3"] = processed_img[2]
-        serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            raise ValidationError({"detail":"Not the same person!"})
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     
 
@@ -256,7 +266,7 @@ class Verify(ModelViewSet):
             return Response(
                 {"error": "No face found in the image"}, status=status.HTTP_400_BAD_REQUEST
             )
-        result = compare(guardian.user_photo.path, temp_path)
+        result = compare(guardian.user_photo_1.path, temp_path)
 
         if result:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -274,16 +284,12 @@ class Verify(ModelViewSet):
         # Authenticator_id = request.data.get("guardian_id")
         student = Student.objects.get(id=student_id)
         guardian = Guardian.objects.get(id=guardian_id)
-        authenticator = Authenticator.objects.get(user__id="1108958c-4e9f-41f4-b44e-3c30c5800644")
+        authenticator = request.user
 
         try:
             log = Log.objects.create(student=student, guardian=guardian, authenticator=authenticator)
-            student.is_present = False
-            student.save()
-            return Response(
-                {"message": "Log object created successfully"},
-                status=status.HTTP_201_CREATED,
-            )
+            serializer = LogSerializer(log)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             print(f"An error occurred while creating the Log object: {e}")
             return Response(

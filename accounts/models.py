@@ -98,7 +98,6 @@ class Student(models.Model):
     image = models.ImageField(upload_to="students/", null=True)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
     parents = models.ManyToManyField("Parent", related_name="students",blank=True)
-    is_present = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

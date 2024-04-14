@@ -52,7 +52,7 @@ class SimpleStudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Student
-        fields = ["id", "first_name", "last_name", "grade", "is_present", "image"]
+        fields = ["id", "first_name", "last_name", "grade", "image"]
 
 
 class GuardianSerializer(serializers.ModelSerializer):
@@ -100,13 +100,7 @@ class ParentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Parent
-        fields = [
-            "user",
-            "user_photo_1",
-            "user_photo_2",
-            "user_photo_3",
-            "students"
-        ]
+        fields = ["user", "user_photo_1", "user_photo_2", "user_photo_3", "students"]
 
     def create(self, validated_data):
         user_data = validated_data.pop("user")
@@ -236,7 +230,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "gender",
             "grade",
             "guardians",
-            "parents"
+            "parents",
         ]
 
 

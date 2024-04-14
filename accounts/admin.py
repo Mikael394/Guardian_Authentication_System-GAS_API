@@ -11,17 +11,12 @@ class GuardianAdmin(admin.ModelAdmin):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ["first_name","last_name","present"]
+    list_display = ["first_name","last_name"]
     # list_editable = ["present"]
     # ordering = []
     # list_per_page = 10
     search_fields = ["first_name__istartswith","last_name__istartswith"]
-    @admin.display(ordering="is_present")
-    def present(self,student):
-        if student.is_present:
-            return "Present"
-        else:
-            return "Absent"
+    
 @admin.register(Log)
 class LogAdmin(admin.ModelAdmin):
     list_display = ["student","guardian","authenticator","date_time","action"]
