@@ -56,33 +56,71 @@ def create_user(data):
     }
     return transformed_data
 
+# class ParentView(ModelViewSet):
+#     queryset = Parent.objects.all()
+#     serializer_class = ParentSerializer
+
+    # def perform_create(self, serializer):
+    #     user_data = create_user(self.request.data)
+    #     user_photos = [self.request.data["user_photo_1"].read(),self.request.data["user_photo_2"].read(),self.request.data["user_photo_3"].read()]
+    #     processed_img = []
+
+    #     for index, photo in enumerate(user_photos):
+    #         pr_image = process_image(photo)
+    #         if pr_image is None:
+    #             raise ValidationError({"detail":f"No face found in the image_{index+1}"})
+    #         processed_img.append(pr_image)
+    #     # if are_the_same(processed_img):
+    #         # Validate and set the student_id and user_photo before saving the instance
+    #     serializer.validated_data["user_photo_1"] = processed_img[0]
+    #     serializer.validated_data["user_photo_2"] = processed_img[1]
+    #     serializer.validated_data["user_photo_3"] = processed_img[2]
+    #     serializer.validated_data["user"] = user_data
+    #     serializer.save()
+
+    #     # else:
+    #     #     raise ValidationError({"detail":"Not the same person!"})
+
+    
+    
 class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
 
-    def perform_create(self, serializer):
-        user_data = create_user(self.request.data)
-        user_photos = [self.request.data["user_photo_1"].read(),self.request.data["user_photo_2"].read(),self.request.data["user_photo_3"].read()]
-        processed_img = []
+    @action(detail=True, methods=["get", "post"])
+    def activate(self, request, *args, **kwargs):
+        parent_id = self.kwargs["pk"]
 
-        for index, photo in enumerate(user_photos):
-            pr_image = process_image(photo)
-            if pr_image is None:
-                raise ValidationError({"detail":f"No face found in the image_{index+1}"})
-            processed_img.append(pr_image)
-        # if are_the_same(processed_img):
-            # Validate and set the student_id and user_photo before saving the instance
-        serializer.validated_data["user_photo_1"] = processed_img[0]
-        serializer.validated_data["user_photo_2"] = processed_img[1]
-        serializer.validated_data["user_photo_3"] = processed_img[2]
-        serializer.validated_data["user"] = user_data
-        serializer.save()
+        if request.method == "GET":
+            # Return guardians that are not associated with the student
+            parents_list = Parent.objects.filter(user__is_active=False)
+            serializer = ParentSerializer(parents_list, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            user_photos = [request.data["user_photo_1"].read(),request.data["user_photo_2"].read(),request.data["user_photo_3"].read()]
+            processed_img = []
+            try:
+                parent = Parent.objects.get(user_id=parent_id)
+            except Parent.DoesNotExist:
+                return Response(
+                    {"detail": "Parent not found"}, status=status.HTTP_404_NOT_FOUND
+                )
 
-        # else:
-        #     raise ValidationError({"detail":"Not the same person!"})
+            for index, photo in enumerate(user_photos):
+                pr_image = process_image(photo)
+                if pr_image is None:
+                    raise ValidationError({"detail":f"No face found in the image_{index+1}"})
+                processed_img.append(pr_image)
+            parent.user_photo_1 = processed_img[0]
+            parent.user_photo_2 = processed_img[1]
+            parent.user_photo_3 = processed_img[2]
+            parent.save()
+            
+            return Response(
+                {"detail": "Activated successfully"},
+                status=status.HTTP_200_OK,
+            )
 
-    
-    
 
 
       
