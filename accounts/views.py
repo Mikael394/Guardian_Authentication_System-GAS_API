@@ -10,7 +10,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from PIL import Image
 
 from .permission import IsAdminOrReadOnly
-from .serializer import AttendanceSerializer, ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
+from .serializer import AttendanceSerializer, ContactBookSerializer, ParentSerializer2, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy,process_image
 from .models import Attendance, ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, Video
 
@@ -25,12 +25,43 @@ def are_the_same(processed_img):
 
     return (c1 and c2 and c3)
 
+def transform_data(data):
+    transformed_data = {
+        "user": {
+            "first_name": data.get("first_name", ""),
+            "last_name": data.get("last_name", ""),
+            "username": data.get("username", ""),
+            "email": data.get("email", ""),
+            "phone_number": data.get("phone_number", ""),
+            "gender": data.get("gender", None),
+            "date_of_birth": data.get("date_of_birth", None),
+            "password": data.get("password", ""),
+        },
+        "user_photo_1": data.get("user_photo_1", None),
+        "user_photo_2": data.get("user_photo_2", None),
+        "user_photo_3": data.get("user_photo_3", None),
+    }
+    return transformed_data
+
+def create_user(data):
+    transformed_data = {
+        "first_name": data.get("first_name", ""),
+        "last_name": data.get("last_name", ""),
+        "username": data.get("username", ""),
+        "email": data.get("email", ""),
+        "phone_number": data.get("phone_number", ""),
+        "gender": data.get("gender", None),
+        "date_of_birth": data.get("date_of_birth", None),
+        "password": data.get("password", "")
+    }
+    return transformed_data
 
 class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
 
     def perform_create(self, serializer):
+        user_data = create_user(self.request.data)
         user_photos = [self.request.data["user_photo_1"].read(),self.request.data["user_photo_2"].read(),self.request.data["user_photo_3"].read()]
         processed_img = []
 
@@ -39,16 +70,16 @@ class ParentView(ModelViewSet):
             if pr_image is None:
                 raise ValidationError({"detail":f"No face found in the image_{index+1}"})
             processed_img.append(pr_image)
-        if are_the_same(processed_img):
+        # if are_the_same(processed_img):
             # Validate and set the student_id and user_photo before saving the instance
-            serializer.validated_data["user_photo_1"] = processed_img[0]
-            serializer.validated_data["user_photo_2"] = processed_img[1]
-            serializer.validated_data["user_photo_3"] = processed_img[2]
-            serializer.save()
+        serializer.validated_data["user_photo_1"] = processed_img[0]
+        serializer.validated_data["user_photo_2"] = processed_img[1]
+        serializer.validated_data["user_photo_3"] = processed_img[2]
+        serializer.validated_data["user"] = user_data
+        serializer.save()
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            raise ValidationError({"detail":"Not the same person!"})
+        # else:
+        #     raise ValidationError({"detail":"Not the same person!"})
 
     
     

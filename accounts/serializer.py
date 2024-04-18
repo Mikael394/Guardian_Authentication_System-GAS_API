@@ -93,17 +93,42 @@ class HomeRoomTeacherSerializer(serializers.ModelSerializer):
         user.save()
         hrt = HomeRoomTeacher.objects.create(user=user, **validated_data)
         return hrt
+    
+# class ParentSerializer(serializers.ModelSerializer):
+#     user = UserCreateSerializer()
 
+#     class Meta:
+#         model = Parent
+#         fields = ["user", "user_photo_1", "user_photo_2", "user_photo_3",]
+def transform_data(data):
+    transformed_data = {
+        "user": {
+            "first_name": data.get("first_name", ""),
+            "last_name": data.get("last_name", ""),
+            "username": data.get("username", ""),
+            "email": data.get("email", ""),
+            "phone_number": data.get("phone_number", ""),
+            "gender": data.get("gender", None),
+            "date_of_birth": data.get("date_of_birth", None),
+            "password": data.get("password", ""),
+        },
+        "user_photo_1": data.get("user_photo_1", None),
+        "user_photo_2": data.get("user_photo_2", None),
+        "user_photo_3": data.get("user_photo_3", None),
+    }
+    return transformed_data
 
 class ParentSerializer(serializers.ModelSerializer):
-    user = UserCreateSerializer()
-
     class Meta:
         model = Parent
-        fields = ["user", "user_photo_1", "user_photo_2", "user_photo_3"]
+        fields = ["user_photo_2","user_photo_2", "user_photo_3"]
 
     def create(self, validated_data):
+        print(validated_data)
+        # validated_data = transform_data(validated_data)
+        # print(validated_data)
         user_data = validated_data.pop("user")
+
         user_serializer = UserCreateSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
@@ -111,8 +136,13 @@ class ParentSerializer(serializers.ModelSerializer):
         user.save()
         parent = Parent.objects.create(user=user, **validated_data)
         return parent
-
-
+    
+class ParentSerializer2(serializers.ModelSerializer):
+    user = UserCreateSerializer()
+    class Meta:
+        model = Parent
+        fields = ["user","user_photo_2","user_photo_2", "user_photo_3"]
+   
 class ContactBookSerializer(serializers.ModelSerializer):
 
     class Meta:
