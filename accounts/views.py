@@ -78,6 +78,37 @@ class HomeRoomTeacherView(ModelViewSet):
     queryset = HomeRoomTeacher.objects.all()
     serializer_class = HomeRoomTeacherSerializer
 
+
+    @action(detail=True, methods=["get", "post"])
+    def activate(self, request, *args, **kwargs):
+        hrt_id = self.kwargs["pk"]
+
+        if request.method == "GET":
+            # Return guardians that are not associated with the student
+            hrt_list = HomeRoomTeacher.objects.filter(user__is_active=False)
+            serializer = HomeRoomTeacherSerializer(hrt_list, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            try:
+                hrt = HomeRoomTeacher.objects.get(user_id=hrt_id)
+            except Parent.DoesNotExist:
+                return Response(
+                    {"detail": "Home room teacher not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+
+            if not hrt.user.is_active:
+                hrt.user.is_active = True
+                hrt.user.save()
+                hrt.save()
+                return Response(
+                    {"detail": "Activated successfully"},
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {"detail": "Already activated!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
 class GradeAndSectionView(ModelViewSet):
     queryset = GradeAndSection.objects.all()
     serializer_class = GradeAndSectionSerializer
@@ -208,6 +239,13 @@ class StudentView(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
+    @action(detail=True, methods=["get"])
+    def view_parent(self, request, *args, **kwargs):
+        student_id = self.kwargs["pk"]
+        parents_list = Parent.objects.filter(students__id=student_id)
+        serializer = ParentSerializer(parents_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=["get", "post"])
     def assign_parent(self, request, *args, **kwargs):
         student_id = self.kwargs["pk"]
@@ -215,7 +253,7 @@ class StudentView(ModelViewSet):
 
         if request.method == "GET":
             # Return guardians that are not associated with the student
-            parents_list = Parent.objects.all()
+            parents_list = Parent.objects.exclude(students__id=student_id)
             serializer = ParentSerializer(parents_list, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == "POST":
@@ -239,14 +277,35 @@ class StudentView(ModelViewSet):
                 {"detail": "Parent added to student successfully"},
                 status=status.HTTP_200_OK,
             )
+    
+    @action(detail=True, methods=["get", "post"])
+    def remove_parent(self, request, *args, **kwargs):
+        student_id = self.kwargs["pk"]
+        parent_id = request.data.get("parent_id")
+
+        if request.method == "GET":
+            parents_list = Parent.objects.filter(students__id=student_id)
+            serializer = ParentSerializer(parents_list, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            try:
+                parent = Parent.objects.get(user_id=parent_id)
+            except Parent.DoesNotExist:
+                return Response(
+                    {"detail": "Parent not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+
+            parent.students.remove(student_id)
+
+            return Response(
+                {"detail": "Parent removed successfully."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+
 
 class StudentViewNested(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-
-    # permission_classes = [IsAdminOrReadOnly]
-    # def get_serializer_context(self):
-    #     return {"student_id": self.kwargs["student_pk"]}
 
     def get_queryset(self):
         return Student.objects.filter(guardians__id=self.kwargs["guardian_pk"])
@@ -336,4 +395,3 @@ class AttendanceViewNested(ModelViewSet):
 class LogView(ReadOnlyModelViewSet):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
-    # permission_classes = [IsAdminUser]
