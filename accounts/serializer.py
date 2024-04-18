@@ -13,7 +13,6 @@ from .models import (
     Guardian,
     Authenticator,
     Log,
-    User,
     Video,
 )
 
@@ -28,9 +27,11 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "email",
             "phone_number",
             "gender",
+            "is_active",
             "date_of_birth",
             "password",
         ]
+        read_only_fields = ["is_active"]
 
 
 class UserSerializer(BaseUserSerializer):
@@ -118,30 +119,14 @@ def transform_data(data):
     }
     return transformed_data
 
-# class ParentSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Parent
-#         fields = ["user_photo_2","user_photo_2", "user_photo_3"]
-
-#     def create(self, validated_data):
-#         print(validated_data)
-#         # validated_data = transform_data(validated_data)
-#         # print(validated_data)
-#         user_data = validated_data.pop("user")
-
-#         user_serializer = UserCreateSerializer(data=user_data)
-#         user_serializer.is_valid(raise_exception=True)
-#         user = user_serializer.save()
-#         user.is_parent = True
-#         user.save()
-#         parent = Parent.objects.create(user=user, **validated_data)
-#         return parent
 
 class ParentSerializer(serializers.ModelSerializer):
     user = UserCreateSerializer()
     class Meta:
         model = Parent
-        fields = ["user"]
+        fields = ["user","user_photo_1","user_photo_2", "user_photo_3"]
+
+        read_only_fields = ["user_photo_1","user_photo_2", "user_photo_3"]
 
     def create(self, validated_data):
         user_data = validated_data.pop("user")
@@ -153,12 +138,6 @@ class ParentSerializer(serializers.ModelSerializer):
         parent = Parent.objects.create(user=user)
         return parent
     
-class ParentSerializer2(serializers.ModelSerializer):
-    user = UserCreateSerializer()
-    class Meta:
-        model = Parent
-        fields = ["user","user_photo_2","user_photo_2", "user_photo_3"]
-   
 class ContactBookSerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -10,7 +10,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from PIL import Image
 
 from .permission import IsAdminOrReadOnly
-from .serializer import AttendanceSerializer, ContactBookSerializer, ParentSerializer2, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
+from .serializer import AttendanceSerializer, ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy,process_image
 from .models import Attendance, ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, Video
 
@@ -24,37 +24,6 @@ def are_the_same(processed_img):
     c3 = compare(processed_img[1],processed_img[2])
 
     return (c1 and c2 and c3)
-
-def transform_data(data):
-    transformed_data = {
-        "user": {
-            "first_name": data.get("first_name", ""),
-            "last_name": data.get("last_name", ""),
-            "username": data.get("username", ""),
-            "email": data.get("email", ""),
-            "phone_number": data.get("phone_number", ""),
-            "gender": data.get("gender", None),
-            "date_of_birth": data.get("date_of_birth", None),
-            "password": data.get("password", ""),
-        },
-        "user_photo_1": data.get("user_photo_1", None),
-        "user_photo_2": data.get("user_photo_2", None),
-        "user_photo_3": data.get("user_photo_3", None),
-    }
-    return transformed_data
-
-def create_user(data):
-    transformed_data = {
-        "first_name": data.get("first_name", ""),
-        "last_name": data.get("last_name", ""),
-        "username": data.get("username", ""),
-        "email": data.get("email", ""),
-        "phone_number": data.get("phone_number", ""),
-        "gender": data.get("gender", None),
-        "date_of_birth": data.get("date_of_birth", None),
-        "password": data.get("password", "")
-    }
-    return transformed_data
 
 # class ParentView(ModelViewSet):
 #     queryset = Parent.objects.all()
@@ -114,6 +83,7 @@ class ParentView(ModelViewSet):
             parent.user_photo_1 = processed_img[0]
             parent.user_photo_2 = processed_img[1]
             parent.user_photo_3 = processed_img[2]
+            parent.user.is_active = True
             parent.save()
             
             return Response(

@@ -11,6 +11,7 @@ class User(AbstractUser):
     is_parent = models.BooleanField(default=False)
     is_hrt = models.BooleanField(default=False)
     is_authenticator = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     date_of_birth = models.DateField(default=date.today)
