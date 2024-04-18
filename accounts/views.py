@@ -25,32 +25,6 @@ def are_the_same(processed_img):
 
     return (c1 and c2 and c3)
 
-# class ParentView(ModelViewSet):
-#     queryset = Parent.objects.all()
-#     serializer_class = ParentSerializer
-
-    # def perform_create(self, serializer):
-    #     user_data = create_user(self.request.data)
-    #     user_photos = [self.request.data["user_photo_1"].read(),self.request.data["user_photo_2"].read(),self.request.data["user_photo_3"].read()]
-    #     processed_img = []
-
-    #     for index, photo in enumerate(user_photos):
-    #         pr_image = process_image(photo)
-    #         if pr_image is None:
-    #             raise ValidationError({"detail":f"No face found in the image_{index+1}"})
-    #         processed_img.append(pr_image)
-    #     # if are_the_same(processed_img):
-    #         # Validate and set the student_id and user_photo before saving the instance
-    #     serializer.validated_data["user_photo_1"] = processed_img[0]
-    #     serializer.validated_data["user_photo_2"] = processed_img[1]
-    #     serializer.validated_data["user_photo_3"] = processed_img[2]
-    #     serializer.validated_data["user"] = user_data
-    #     serializer.save()
-
-    #     # else:
-    #     #     raise ValidationError({"detail":"Not the same person!"})
-
-    
     
 class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
@@ -80,15 +54,20 @@ class ParentView(ModelViewSet):
                 if pr_image is None:
                     raise ValidationError({"detail":f"No face found in the image_{index+1}"})
                 processed_img.append(pr_image)
-            parent.user_photo_1 = processed_img[0]
-            parent.user_photo_2 = processed_img[1]
-            parent.user_photo_3 = processed_img[2]
-            parent.user.is_active = True
-            parent.save()
-            
+            if not parent.user.is_active:
+                parent.user_photo_1 = processed_img[0]
+                parent.user_photo_2 = processed_img[1]
+                parent.user_photo_3 = processed_img[2]
+                parent.user.is_active = True
+                parent.user.save()
+                parent.save()
+                return Response(
+                    {"detail": "Activated successfully"},
+                    status=status.HTTP_200_OK,
+                )
             return Response(
-                {"detail": "Activated successfully"},
-                status=status.HTTP_200_OK,
+                {"detail": "Already activated!"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 

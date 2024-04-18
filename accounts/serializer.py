@@ -31,7 +31,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "date_of_birth",
             "password",
         ]
-        read_only_fields = ["is_active"]
+        # read_only_fields = ["is_active"]
 
 
 class UserSerializer(BaseUserSerializer):
