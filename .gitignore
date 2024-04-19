@@ -2,7 +2,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-db.sqlite3
 api/
 media/
 utility_backup.py

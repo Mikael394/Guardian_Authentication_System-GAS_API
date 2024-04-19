@@ -272,7 +272,6 @@ class StudentView(ModelViewSet):
             # Add the guardian to the student
             parent.students.add(student_id)
 
-            # You can return a success response or the updated data as needed
             return Response(
                 {"detail": "Parent added to student successfully"},
                 status=status.HTTP_200_OK,
