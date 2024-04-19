@@ -121,7 +121,7 @@ class HomeRoomTeacherView(ModelViewSet):
     # attendance
     @action(detail=False, methods=["get", "post"])
     def take_attendance(self, request, *args, **kwargs):
-        user = User.objects.get(id = "a323c363-921c-41c7-bdf4-309245ec3c13")
+        user = request.user
         try:
             hrt = HomeRoomTeacher.objects.get(user=user)
             section = GradeAndSection.objects.get(home_room_teacher=hrt)
