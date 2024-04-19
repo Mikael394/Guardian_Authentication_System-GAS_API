@@ -1,4 +1,5 @@
 from io import BytesIO
+from datetime import datetime
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from numpy import rec
@@ -134,10 +135,11 @@ class HomeRoomTeacherView(ModelViewSet):
             serializer = StudentSerializer(students,many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == "POST":
-            pre_students = request.data["present"]
+            pre_students = request.data
             attendance = Attendance.objects.create()
-            # for student in pre_students.values():
-                
+            for student_id in pre_students.values():
+                attendance.students.add(student_id)
+            attendance.save()
 
             return Response(
                 {"detail": "Section Assigned successfully"},
@@ -472,6 +474,14 @@ class AttendanceView(ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
+    @action(detail=False, methods=["get"])
+    def todays_attendance(self, request, *args, **kwargs):
+        current_date = datetime.now()
+        formatted_date = current_date.strftime("%Y-%m-%d")
+        attendance = Attendance.objects.get(date=formatted_date)
+        serializers = AttendanceSerializer(attendance)
+        return Response(serializers.data, status=status.HTTP_200_OK)
+
 
 
     
@@ -479,13 +489,6 @@ class AttendanceViewNested(ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
     
-    def get_serializer_context(self):
-        
-        return {"grade_id": self.kwargs["grade_pk"]}
-    
-    def get_queryset(self):
-        return Attendance.objects.filter(grade__id=self.kwargs["grade_pk"])
-
     
     
 

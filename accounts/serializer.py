@@ -278,7 +278,7 @@ class SimpleStudentSerializerForLog(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ["students", "grade", "date"]
+        fields = ["students", "date"]
 
 
 class AttendanceSerializerNested(serializers.ModelSerializer):

@@ -105,7 +105,7 @@ class Student(models.Model):
 
 class Attendance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date = models.DateField(auto_now=True)
+    date = models.DateField(auto_now=True, unique=True)
     students = models.ManyToManyField("Student", related_name="students")
     def __str__(self):
         return f"{self.date}"
