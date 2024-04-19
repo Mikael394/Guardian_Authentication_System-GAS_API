@@ -83,7 +83,7 @@ class Parent(models.Model):
 class GradeAndSection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     grade = models.CharField(max_length=20)
-    home_room_teacher = models.OneToOneField(HomeRoomTeacher,on_delete = models.CASCADE, null = True, blank = True)
+    home_room_teacher = models.OneToOneField(HomeRoomTeacher,on_delete = models.SET_NULL, null=True, blank = True)
 
     def __str__(self):
         return f"{self.grade}"
@@ -106,15 +106,7 @@ class Student(models.Model):
 class Attendance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date = models.DateField(auto_now=True)
-    grade = models.ForeignKey(GradeAndSection, on_delete=models.CASCADE)
-    students = models.ForeignKey(Student,on_delete=models.CASCADE)
-    ATTENDANCE_CHOICES = [
-        ('P', 'Present'),
-        ('A', 'Absent'),
-        ('L', 'Late'),
-    ]
-    status = models.CharField(max_length=8, choices=ATTENDANCE_CHOICES)
-    
+    students = models.ManyToManyField("Student", related_name="students")
     def __str__(self):
         return f"{self.date}"
 

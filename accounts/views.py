@@ -1,6 +1,7 @@
 from io import BytesIO
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
+from numpy import rec
 from rest_framework import permissions,status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes,action
@@ -12,7 +13,8 @@ from PIL import Image
 from .permission import IsAdminOrReadOnly
 from .serializer import AttendanceSerializer, ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy,process_image
-from .models import Attendance, ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, Video
+from .models import Attendance, ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, User, Video
+from accounts import serializer
 
 class AuthenticatorView(ModelViewSet):
     queryset = Authenticator.objects.all()
@@ -30,16 +32,16 @@ class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
 
-    @action(detail=True, methods=["get", "post"])
+    @action(detail=False, methods=["get", "post"])
     def activate(self, request, *args, **kwargs):
-        parent_id = self.kwargs["pk"]
-
+        
         if request.method == "GET":
             # Return guardians that are not associated with the student
             parents_list = Parent.objects.filter(user__is_active=False)
             serializer = ParentSerializer(parents_list, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == "POST":
+            parent_id = request.data["parent_id"]
             user_photos = [request.data["user_photo_1"].read(),request.data["user_photo_2"].read(),request.data["user_photo_3"].read()]
             processed_img = []
             try:
@@ -72,6 +74,9 @@ class ParentView(ModelViewSet):
 
 
 
+
+
+
       
 
 class HomeRoomTeacherView(ModelViewSet):
@@ -79,9 +84,9 @@ class HomeRoomTeacherView(ModelViewSet):
     serializer_class = HomeRoomTeacherSerializer
 
 
-    @action(detail=True, methods=["get", "post"])
+    @action(detail=False, methods=["get", "post"])
     def activate(self, request, *args, **kwargs):
-        hrt_id = self.kwargs["pk"]
+        # hrt_id = self.kwargs["pk"]
 
         if request.method == "GET":
             # Return guardians that are not associated with the student
@@ -89,6 +94,7 @@ class HomeRoomTeacherView(ModelViewSet):
             serializer = HomeRoomTeacherSerializer(hrt_list, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == "POST":
+            hrt_id = request.data["hrt_id"]            
             try:
                 hrt = HomeRoomTeacher.objects.get(user_id=hrt_id)
             except Parent.DoesNotExist:
@@ -108,10 +114,98 @@ class HomeRoomTeacherView(ModelViewSet):
                 {"detail": "Already activated!"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+   
+    # req.user => section with user id => grade id => student respond
+    # rec.user => section with user id => grade id => student attendance
+    # attendance
+    @action(detail=False, methods=["get", "post"])
+    def take_attendance(self, request, *args, **kwargs):
+        user = User.objects.get(id = "a323c363-921c-41c7-bdf4-309245ec3c13")
+        try:
+            hrt = HomeRoomTeacher.objects.get(user=user)
+            section = GradeAndSection.objects.get(home_room_teacher=hrt)
+        except HomeRoomTeacher.DoesNotExist:
+            return Response(
+                {"detail": "Home room teacher not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if request.method == "GET":
+            students = Student.objects.filter(grade=section)
+            serializer = StudentSerializer(students,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.method == "POST":
+            pre_students = request.data["present"]
+            attendance = Attendance.objects.create()
+            # for student in pre_students.values():
+                
+
+            return Response(
+                {"detail": "Section Assigned successfully"},
+                status=status.HTTP_200_OK,
+            )
+
+    @action(detail=False, methods=["get", "post","patch"])
+    def manage_grade(self, request, *args, **kwargs):
+
+        if request.method == "GET":
+            # Return guardians that are not associated with the student
+            section_list = GradeAndSection.objects.all()
+            serializer = GradeAndSectionSerializer(section_list, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            hrt_id = request.data["hrt_id"]
+            grade_id = request.data["grade_id"]
+
+            try:
+                hrt = HomeRoomTeacher.objects.get(user_id=hrt_id)
+                section = GradeAndSection.objects.get(id=grade_id)
+            except Parent.DoesNotExist:
+                return Response(
+                    {"detail": "Home room teacher not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+            
+            section.home_room_teacher = hrt
+            section.save()
+
+            return Response(
+                {"detail": "Section Assigned successfully"},
+                status=status.HTTP_200_OK,
+            )
+        elif request.method == "PATCH":
+            hrt_id = request.data["hrt_id"]
+
+            try:
+                hrt = HomeRoomTeacher.objects.get(user_id=hrt_id)
+                section = GradeAndSection.objects.get(home_room_teacher=hrt)
+            except Parent.DoesNotExist:
+                return Response(
+                    {"detail": "Home room teacher not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+            
+            section.home_room_teacher = None
+            section.save()
+
+            return Response(
+                {"detail": "Section removed successfully"},
+                status=status.HTTP_200_OK,
+            )
+            
+            
+
+
+
+
+    
+
+
+
+
 
 class GradeAndSectionView(ModelViewSet):
     queryset = GradeAndSection.objects.all()
     serializer_class = GradeAndSectionSerializer
+
+
 
 class ContactBookView(ModelViewSet):
     queryset = ContactBook.objects.all()
@@ -295,6 +389,7 @@ class StudentView(ModelViewSet):
                 )
 
             parent.students.remove(student_id)
+            parent.save()
 
             return Response(
                 {"detail": "Parent removed successfully."},
@@ -376,6 +471,9 @@ class Verify(ModelViewSet):
 class AttendanceView(ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
+
+
+
     
 class AttendanceViewNested(ModelViewSet):
     queryset = Attendance.objects.all()

@@ -171,7 +171,7 @@ class GradeAndSectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GradeAndSection
-        fields = ["id", "grade"]
+        fields = ["id", "grade","home_room_teacher"]
 
 
 class GuardianSerializerNested(serializers.ModelSerializer):
