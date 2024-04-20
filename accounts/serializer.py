@@ -53,7 +53,6 @@ class UserSerializer(BaseUserSerializer):
             "phone_number",
             "gender",
             "date_of_birth",
-            "password",
             "is_active",
             "is_parent",
             "is_hrt",
