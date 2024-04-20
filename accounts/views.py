@@ -2,7 +2,7 @@ from io import BytesIO
 from datetime import datetime
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
-from numpy import rec
+from django.contrib.auth.models import AnonymousUser
 from rest_framework import permissions,status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes,action
@@ -122,6 +122,10 @@ class HomeRoomTeacherView(ModelViewSet):
     @action(detail=False, methods=["get", "post"])
     def take_attendance(self, request, *args, **kwargs):
         user = request.user
+        if isinstance(user, AnonymousUser):
+        # Handle the case where request.user is AnonymousUser
+            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
         try:
             hrt = HomeRoomTeacher.objects.get(user=user)
             section = GradeAndSection.objects.get(home_room_teacher=hrt)
