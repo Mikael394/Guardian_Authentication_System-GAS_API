@@ -15,7 +15,7 @@ from .permission import IsAdminOrReadOnly
 from .serializer import AttendanceSerializer, ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy,process_image
 from .models import Attendance, ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, User, Video
-from accounts import serializer
+
 
 class AuthenticatorView(ModelViewSet):
     queryset = Authenticator.objects.all()

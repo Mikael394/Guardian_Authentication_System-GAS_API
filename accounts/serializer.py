@@ -28,10 +28,18 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "phone_number",
             "gender",
             "is_active",
+            "is_parent",
+            "is_hrt",
+            "is_authenticator",
             "date_of_birth",
             "password",
         ]
-        read_only_fields = ["is_active"]
+        read_only_fields = [
+            "is_active",
+            "is_parent",
+            "is_hrt",
+            "is_authenticator",
+        ]
 
 
 class UserSerializer(BaseUserSerializer):
@@ -46,6 +54,16 @@ class UserSerializer(BaseUserSerializer):
             "gender",
             "date_of_birth",
             "password",
+            "is_active",
+            "is_parent",
+            "is_hrt",
+            "is_authenticator",
+        ]
+        read_only_fields = [
+            "is_active",
+            "is_parent",
+            "is_hrt",
+            "is_authenticator",
         ]
 
 
@@ -94,16 +112,16 @@ class HomeRoomTeacherSerializer(serializers.ModelSerializer):
         user.save()
         hrt = HomeRoomTeacher.objects.create(user=user, **validated_data)
         return hrt
-    
 
 
 class ParentSerializer(serializers.ModelSerializer):
     user = UserCreateSerializer()
+
     class Meta:
         model = Parent
-        fields = ["user","user_photo_1","user_photo_2", "user_photo_3"]
+        fields = ["user", "user_photo_1", "user_photo_2", "user_photo_3"]
 
-        read_only_fields = ["user_photo_1","user_photo_2", "user_photo_3"]
+        read_only_fields = ["user_photo_1", "user_photo_2", "user_photo_3"]
 
     def create(self, validated_data):
         user_data = validated_data.pop("user")
@@ -114,7 +132,8 @@ class ParentSerializer(serializers.ModelSerializer):
         user.save()
         parent = Parent.objects.create(user=user)
         return parent
-    
+
+
 class ContactBookSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -171,7 +190,7 @@ class GradeAndSectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GradeAndSection
-        fields = ["id", "grade","home_room_teacher"]
+        fields = ["id", "grade", "home_room_teacher"]
 
 
 class GuardianSerializerNested(serializers.ModelSerializer):
