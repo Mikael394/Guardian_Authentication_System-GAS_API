@@ -140,7 +140,7 @@ class HomeRoomTeacherView(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == "POST":
             pre_students = request.data
-            attendance = Attendance.objects.create()
+            attendance = Attendance.objects.create(grade=section)
             for student_id in pre_students.values():
                 attendance.students.add(student_id)
             attendance.save()
@@ -485,6 +485,40 @@ class AttendanceView(ModelViewSet):
         attendance = Attendance.objects.get(date=formatted_date)
         serializers = AttendanceSerializer(attendance)
         return Response(serializers.data, status=status.HTTP_200_OK)
+    @action(detail=False, methods=["get","post"])
+    def get_attendance(self, request, *args, **kwargs):
+        user = request.user
+        if isinstance(user, AnonymousUser):
+        # Handle the case where request.user is AnonymousUser
+            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            hrt = HomeRoomTeacher.objects.get(user=user)
+            section = GradeAndSection.objects.get(home_room_teacher=hrt)
+        except HomeRoomTeacher.DoesNotExist:
+            return Response(
+                {"detail": "Home room teacher not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if request.method == "GET":
+            attendance = Attendance.objects.filter(grade=section)
+            serializer = AttendanceSerializer(attendance,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            r_date = request.data["date"]
+
+            try:
+                attendance = Attendance.objects.get(grade=section,date=r_date)
+            except Attendance.DoesNotExist:
+                return Response(
+                    {"detail": "No attendance registered on thi date"}, status=status.HTTP_404_NOT_FOUND
+                )
+        serializer = AttendanceSerializer(attendance)
+        return Response(serializer.data, status=status.HTTP_200_OK)       
+
+
+
+
 
 
 

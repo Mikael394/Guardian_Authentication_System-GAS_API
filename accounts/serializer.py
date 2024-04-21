@@ -182,7 +182,7 @@ class ContactBookSerializerNested(serializers.ModelSerializer):
 class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
-        fields = ("id", "title", "file", "uploaded_at")
+        fields = ("id", "file", "uploaded_at")
 
 
 class GradeAndSectionSerializer(serializers.ModelSerializer):
@@ -296,7 +296,7 @@ class SimpleStudentSerializerForLog(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ["students", "date"]
+        fields = ["students","grade", "date"]
 
 
 class AttendanceSerializerNested(serializers.ModelSerializer):

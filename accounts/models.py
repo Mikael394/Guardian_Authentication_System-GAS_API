@@ -106,14 +106,13 @@ class Student(models.Model):
 class Attendance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date = models.DateField(auto_now=True, unique=True)
+    grade = models.ForeignKey(GradeAndSection, on_delete=models.CASCADE)
     students = models.ManyToManyField("Student", related_name="students")
     def __str__(self):
         return f"{self.date}"
 
 class Authenticator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    role = models.CharField(max_length=50)
-
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
 
