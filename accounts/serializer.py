@@ -259,7 +259,7 @@ class AuthenticatorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Authenticator
-        fields = ["user", "role"]
+        fields = ["user"]
 
     def create(self, validated_data):
         user_data = validated_data.pop("user")

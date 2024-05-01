@@ -83,7 +83,7 @@ class Parent(models.Model):
 class GradeAndSection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     grade = models.CharField(max_length=20)
-    home_room_teacher = models.OneToOneField(HomeRoomTeacher,on_delete = models.SET_NULL, null=True, blank = True)
+    home_room_teacher = models.OneToOneField(HomeRoomTeacher,on_delete = models.SET_NULL, null=True, blank = True, related_name="section")
 
     def __str__(self):
         return f"{self.grade}"
@@ -123,19 +123,19 @@ class ContactBook(models.Model):
     date_time = models.DateTimeField(auto_now=True)
     LEVEL = [("Very Good","Very Good"),("Good","Good"),("Fair","Fair"),("Need Improvement","Need Improvement")]
     yes_no = [("Yes","Yes"),("No","No")]
-    parents_follow_up = models.CharField(max_length=20, choices=LEVEL)
-    hand_writing = models.CharField(max_length=20, choices=LEVEL)
-    reading_skill = models.CharField(max_length=20, choices=LEVEL)
-    material_handling = models.CharField(max_length=20, choices=LEVEL)
+    parents_follow_up = models.CharField(max_length=20, choices=LEVEL, null=True,blank=True)
+    hand_writing = models.CharField(max_length=20, choices=LEVEL, null=True,blank=True )
+    reading_skill = models.CharField(max_length=20, choices=LEVEL, null=True,blank=True)
+    material_handling = models.CharField(max_length=20, choices=LEVEL, null=True,blank=True)
 
-    happy = models.CharField(max_length=20, choices=yes_no)
-    wear_uniform = models.CharField(max_length=20, choices=yes_no)
-    has_good_time_while_eating = models.CharField(max_length=20, choices=yes_no)
-    active_participation = models.CharField(max_length=20, choices=yes_no)
+    happy = models.CharField(max_length=20, choices=yes_no, null=True,blank=True)
+    wear_uniform = models.CharField(max_length=20, choices=yes_no, null=True,blank=True)
+    has_good_time_while_eating = models.CharField(max_length=20, choices=yes_no, null=True,blank=True)
+    active_participation = models.CharField(max_length=20, choices=yes_no, null=True,blank=True)
 
     
-    teacher_comment = models.TextField()
-    parent_comment = models.TextField()
+    teacher_comment = models.TextField(null=True,blank=True)
+    parent_comment = models.TextField(null=True,blank=True)
 
     is_read_p = models.BooleanField(default=False)
     is_read_t = models.BooleanField(default=False)

@@ -72,14 +72,7 @@ class ParentView(ModelViewSet):
                 {"detail": "Already activated!"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-
-
-
-
-
-      
-
+     
 class HomeRoomTeacherView(ModelViewSet):
     queryset = HomeRoomTeacher.objects.all()
     serializer_class = HomeRoomTeacherSerializer
@@ -115,15 +108,11 @@ class HomeRoomTeacherView(ModelViewSet):
                 {"detail": "Already activated!"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-   
-    # req.user => section with user id => grade id => student respond
-    # rec.user => section with user id => grade id => student attendance
-    # attendance
+
     @action(detail=False, methods=["get", "post"])
     def take_attendance(self, request, *args, **kwargs):
         user = request.user
         if isinstance(user, AnonymousUser):
-        # Handle the case where request.user is AnonymousUser
             return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
@@ -165,15 +154,22 @@ class HomeRoomTeacherView(ModelViewSet):
             try:
                 hrt = HomeRoomTeacher.objects.get(user_id=hrt_id)
                 section = GradeAndSection.objects.get(id=grade_id)
+                
             except Parent.DoesNotExist:
                 return Response(
                     {"detail": "Home room teacher not found"}, status=status.HTTP_404_NOT_FOUND
                 )
-            
-            section.home_room_teacher = hrt
-            section.save()
-
-            return Response(
+            if section.home_room_teacher is None:
+                section.home_room_teacher = hrt
+                section.save()
+            else:
+                section.home_room_teacher.clear()
+                
+                # section.save()
+                print(section.home_room_teacher)
+                section.home_room_teacher = hrt
+                section.save()
+            return Response( 
                 {"detail": "Section Assigned successfully"},
                 status=status.HTTP_200_OK,
             )
@@ -196,12 +192,6 @@ class HomeRoomTeacherView(ModelViewSet):
                 status=status.HTTP_200_OK,
             )
             
-            
-
-
-
-
-    
 
 
 
@@ -216,6 +206,68 @@ class GradeAndSectionView(ModelViewSet):
 class ContactBookView(ModelViewSet):
     queryset = ContactBook.objects.all()
     serializer_class = ContactBookSerializer
+    
+    @action(detail=False,methods=['get','patch'])
+    def contact_book_parent(self,request,*args,**kwargs):
+        if request.method == "GET":
+            user = request.user
+            if isinstance(user, AnonymousUser):
+                return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            try:
+                parent = Parent.objects.get(user=user)
+                students = parent.students.all()
+            except HomeRoomTeacher.DoesNotExist:
+                return Response(
+                    {"detail": "parent does not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+        
+            contact_books = ContactBook.objects.filter(student__in=students)
+            serializer = ContactBookSerializer(contact_books,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method =="PATCH":
+            contact_book_id = request.data["cb_id"]
+            p_comment = request.data["p_comment"]
+            contact_book = ContactBook.objects.get(id=contact_book_id)
+            
+            contact_book.parent_comment=p_comment
+            contact_book.is_read_p = True
+            contact_book.save()
+            serializer = ContactBookSerializer(contact_book)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+    @action(detail=False,methods=['get','post','patch'])
+    def contact_book_hrt(self,request,*args,**kwargs):
+        if request.method == "GET":
+            user = request.user
+            if isinstance(user, AnonymousUser):
+                return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            try:
+                hrt = HomeRoomTeacher.objects.get(user=user)
+            except HomeRoomTeacher.DoesNotExist:
+                return Response(
+                    {"detail": "Home room teacher does not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+        
+            contact_books = ContactBook.objects.filter(home_room_teacher=hrt)
+            serializer = ContactBookSerializer(contact_books,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            student_id = request.data["student_id"]
+            
+            contact_books = ContactBook.objects.filter(student__id=student_id)
+            serializer = ContactBookSerializer(contact_books,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "PATCH":
+            contact_book_id = request.data["cb_id"]
+            contact_book = ContactBook.objects.get(id=contact_book_id)
+
+            contact_book.is_read_t = True
+            contact_book.save()
+            serializer = ContactBookSerializer(contact_book)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
 
 class VideoListCreate(ModelViewSet):
     queryset = Video.objects.all()
@@ -232,8 +284,12 @@ class ContactBookViewNested(ModelViewSet):
         return ContactBook.objects.filter(student__id=self.kwargs["student_pk"])
 
     def perform_create(self, serializer):
+        user = request.user
+        if isinstance(user, AnonymousUser):
+            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
         student = Student.objects.get(id = self.kwargs["student_pk"])
-        hrt = HomeRoomTeacher.objects.get(user__id="fdc3d8ff-6a60-43d7-bfa1-9787b05be344")
+        hrt = HomeRoomTeacher.objects.get(user=user)
         print(hrt)
         
         # Validate and set the student_id and user_photo before saving the instance
@@ -511,16 +567,10 @@ class AttendanceView(ModelViewSet):
                 attendance = Attendance.objects.get(grade=section,date=r_date)
             except Attendance.DoesNotExist:
                 return Response(
-                    {"detail": "No attendance registered on thi date"}, status=status.HTTP_404_NOT_FOUND
+                    {"detail": "No attendance registered on this date"}, status=status.HTTP_404_NOT_FOUND
                 )
         serializer = AttendanceSerializer(attendance)
         return Response(serializer.data, status=status.HTTP_200_OK)       
-
-
-
-
-
-
 
     
 class AttendanceViewNested(ModelViewSet):
@@ -528,8 +578,6 @@ class AttendanceViewNested(ModelViewSet):
     serializer_class = AttendanceSerializer
     
     
-    
-
 class LogView(ReadOnlyModelViewSet):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
