@@ -254,14 +254,24 @@ class ContactBookView(ModelViewSet):
             serializer = ContactBookSerializer(contact_books,many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == "POST":
-            student_id = request.data["student_id"]
-            
-            contact_books = ContactBook.objects.filter(student__id=student_id)
-            serializer = ContactBookSerializer(contact_books,many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            info_type = request.data["info_type"]
+            if info_type == "student":
+                student_id = request.data["student_id"]
+                
+                contact_books = ContactBook.objects.filter(student__id=student_id)
+                serializer = ContactBookSerializer(contact_books,many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                contact_book_id = request.data["cb_id"]
+                contact_book = ContactBook.objects.get(id=contact_book_id)
+                serializer = ContactBookSerializer(contact_book)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+               
         elif request.method == "PATCH":
             contact_book_id = request.data["cb_id"]
             contact_book = ContactBook.objects.get(id=contact_book_id)
+            
+            
 
             contact_book.is_read_t = True
             contact_book.save()
