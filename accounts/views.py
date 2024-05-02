@@ -284,7 +284,7 @@ class ContactBookViewNested(ModelViewSet):
         return ContactBook.objects.filter(student__id=self.kwargs["student_pk"])
 
     def perform_create(self, serializer):
-        user = request.user
+        user = self.request.user
         if isinstance(user, AnonymousUser):
             return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 

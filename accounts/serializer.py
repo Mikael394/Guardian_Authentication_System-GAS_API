@@ -155,7 +155,7 @@ class ContactBookSerializer(serializers.ModelSerializer):
             "is_read_p",
             "is_read_t",
         ]
-
+        read_only_fields = ['home_room_teacher']
 
 class ContactBookSerializerNested(serializers.ModelSerializer):
 
@@ -164,6 +164,7 @@ class ContactBookSerializerNested(serializers.ModelSerializer):
         fields = [
             "id",
             "date_time",
+            "home_room_teacher",
             "parents_follow_up",
             "hand_writing",
             "reading_skill",
@@ -177,6 +178,7 @@ class ContactBookSerializerNested(serializers.ModelSerializer):
             "is_read_p",
             "is_read_t",
         ]
+        read_only_fields = ['home_room_teacher']
 
 
 class VideoSerializer(serializers.ModelSerializer):
