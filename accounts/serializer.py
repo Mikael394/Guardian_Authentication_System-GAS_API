@@ -133,29 +133,6 @@ class ParentSerializer(serializers.ModelSerializer):
         return parent
 
 
-class ContactBookSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ContactBook
-        fields = [
-            "id",
-            "student",
-            "home_room_teacher",
-            "date_time",
-            "parents_follow_up",
-            "hand_writing",
-            "reading_skill",
-            "material_handling",
-            "happy",
-            "wear_uniform",
-            "has_good_time_while_eating",
-            "active_participation",
-            "teacher_comment",
-            "parent_comment",
-            "is_read_p",
-            "is_read_t",
-        ]
-        read_only_fields = ['home_room_teacher']
 
 class ContactBookSerializerNested(serializers.ModelSerializer):
 
@@ -254,6 +231,30 @@ class StudentSerializer(serializers.ModelSerializer):
             "guardians",
             "parents",
         ]
+        
+class ContactBookSerializer(serializers.ModelSerializer):
+    student = StudentSerializer()
+    class Meta:
+        model = ContactBook
+        fields = [
+            "id",
+            "student",
+            "home_room_teacher",
+            "date_time",
+            "parents_follow_up",
+            "hand_writing",
+            "reading_skill",
+            "material_handling",
+            "happy",
+            "wear_uniform",
+            "has_good_time_while_eating",
+            "active_participation",
+            "teacher_comment",
+            "parent_comment",
+            "is_read_p",
+            "is_read_t",
+        ]
+        read_only_fields = ['home_room_teacher']
 
 
 class AuthenticatorSerializer(serializers.ModelSerializer):
