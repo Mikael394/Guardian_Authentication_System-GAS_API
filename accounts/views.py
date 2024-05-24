@@ -129,17 +129,24 @@ class HomeRoomTeacherView(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == "POST":
             pre_students = request.data
+            students_id = []
+            print(pre_students)
             attendance = Attendance.objects.create(grade=section)
             for student_id in pre_students.values():
                 attendance.students.add(student_id)
+                students_id.append(student_id)
+                # student = Student.objects.get(id = self.kwargs["student_pk"])
+                
             attendance.save()
+            present_students = Student.objects.filter(id__in=students_id)
+            present_students.update(is_present = True)
 
             return Response(
-                {"detail": "Section Assigned successfully"},
+                {"detail": "Attendance taken successfully"},
                 status=status.HTTP_200_OK,
             )
 
-    @action(detail=False, methods=["get", "post","patch"])
+    @action(detail=False, methods=["get", "post","patch",])
     def manage_grade(self, request, *args, **kwargs):
 
         if request.method == "GET":
@@ -159,20 +166,24 @@ class HomeRoomTeacherView(ModelViewSet):
                 return Response(
                     {"detail": "Home room teacher not found"}, status=status.HTTP_404_NOT_FOUND
                 )
-            if section.home_room_teacher is None:
+            print(section.home_room_teacher and hrt.section)
+            if (section.home_room_teacher is None) and (hrt.section is None):
                 section.home_room_teacher = hrt
                 section.save()
-            else:
-                section.home_room_teacher.clear()
-                
-                # section.save()
-                print(section.home_room_teacher)
-                section.home_room_teacher = hrt
-                section.save()
-            return Response( 
-                {"detail": "Section Assigned successfully"},
+            elif section.home_room_teacher == hrt :
+                return Response( 
+                {"detail": "Home Room Teacher is already assigned to this Section."},
                 status=status.HTTP_200_OK,
             )
+            else:
+                
+                return Response( 
+                {"detail": "Home Room Teacher is already assigned to other section please remove first."},
+                status=status.HTTP_200_OK,
+            )
+
+                
+
         elif request.method == "PATCH":
             hrt_id = request.data["hrt_id"]
 
@@ -207,7 +218,7 @@ class ContactBookView(ModelViewSet):
     queryset = ContactBook.objects.all()
     serializer_class = ContactBookSerializer
     
-    @action(detail=False,methods=['get','patch'])
+    @action(detail=False,methods=['get','poost','patch'])
     def contact_book_parent(self,request,*args,**kwargs):
         if request.method == "GET":
             user = request.user
@@ -300,7 +311,6 @@ class ContactBookViewNested(ModelViewSet):
 
         student = Student.objects.get(id = self.kwargs["student_pk"])
         hrt = HomeRoomTeacher.objects.get(user=user)
-        print(hrt)
         
         # Validate and set the student_id and user_photo before saving the instance
         serializer.validated_data["student"] = student
@@ -490,6 +500,7 @@ class Verify(ModelViewSet):
     # permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        person = request.data.get("person", None)
         username = request.data.get("username", None)
         user_photo = request.data.get("user_photo", None)
         if not username or not user_photo:
@@ -497,27 +508,51 @@ class Verify(ModelViewSet):
                 {"error": "username and face is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        try:
-            guardian = Guardian.objects.get(username=username)
-        except Guardian.DoesNotExist:
+            
+        if person == "parent":
+            try:
+                parent = Parent.objects.get(user__username=username)
+            except Parent.DoesNotExist:
+                    return Response(
+                        {"detail": "Parent not found with this user name"}, status=status.HTTP_404_NOT_FOUND
+                    )
+            serializer = ParentSerializer(parent)
+            temp_path = save_up(user_photo)
+            if temp_path is None:
                 return Response(
-                    {"detail": "Guardian not found with this"}, status=status.HTTP_404_NOT_FOUND
+                    {"error": "No face found in the image"}, status=status.HTTP_400_BAD_REQUEST
                 )
-        serializer = self.get_serializer(guardian)
-        temp_path = save_up(user_photo)
-        if temp_path is None:
-            return Response(
-                {"error": "No face found in the image"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        result = compare(guardian.user_photo_1.path, temp_path)
+            result = compare(parent.user_photo_1.path, temp_path)
 
-        if result:
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if result:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    {"error": "You are not Authorized"}, status=status.HTTP_400_BAD_REQUEST
+                )
         else:
-            print("not authorized...")
-            return Response(
-                {"error": "You are not Authorized"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            try:
+                guardian = Guardian.objects.get(username=username)
+            except Guardian.DoesNotExist:
+                    return Response(
+                        {"detail": "Guardian not found with this"}, status=status.HTTP_404_NOT_FOUND
+                    )
+            serializer = self.get_serializer(guardian)
+            temp_path = save_up(user_photo)
+            if temp_path is None:
+                return Response(
+                    {"error": "No face found in the image"}, status=status.HTTP_400_BAD_REQUEST
+                )
+            result = compare(guardian.user_photo_1.path, temp_path)
+
+            if result:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                print("not authorized...")
+                return Response(
+                    {"error": "You are not Authorized"}, status=status.HTTP_400_BAD_REQUEST
+                )
+            
 
 
     @action(detail=False, methods=["post"])
@@ -531,6 +566,7 @@ class Verify(ModelViewSet):
 
         try:
             log = Log.objects.create(student=student, guardian=guardian, authenticator=authenticator)
+            student.is_present = False
             serializer = LogSerializer(log)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:

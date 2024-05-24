@@ -230,6 +230,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "grade",
             "guardians",
             "parents",
+            "is_present",
         ]
         
 class ContactBookSerializer(serializers.ModelSerializer):

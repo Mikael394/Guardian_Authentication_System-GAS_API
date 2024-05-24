@@ -97,6 +97,7 @@ class Student(models.Model):
     GENDER_FIELDS = [("Male", "Male"), ("Female", "Female")]
     gender = models.CharField(max_length=6, choices=GENDER_FIELDS)
     image = models.ImageField(upload_to="students/", null=True)
+    is_present = models.BooleanField(default=False)
     guardians = models.ManyToManyField("Guardian", related_name="students", blank=True)
     parents = models.ManyToManyField("Parent", related_name="students",blank=True)
 
