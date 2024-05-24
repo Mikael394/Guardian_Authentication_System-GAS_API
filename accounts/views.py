@@ -562,11 +562,13 @@ class Verify(ModelViewSet):
         # Authenticator_id = request.data.get("guardian_id")
         student = Student.objects.get(id=student_id)
         guardian = Guardian.objects.get(id=guardian_id)
-        authenticator = request.user
+        authenticator = Authenticator.objects.get(user=request.user)
+        print(authenticator)
 
         try:
             log = Log.objects.create(student=student, guardian=guardian, authenticator=authenticator)
             student.is_present = False
+            student.save()
             serializer = LogSerializer(log)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:

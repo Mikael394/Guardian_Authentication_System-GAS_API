@@ -311,7 +311,7 @@ class AttendanceSerializerNested(serializers.ModelSerializer):
 
 class LogSerializer(serializers.ModelSerializer):
     guardian = SimpleGuardianSerializerForLog()
-    Authenticator = SimpleAuthenticatorSerializerForLog()
+    authenticator = SimpleAuthenticatorSerializerForLog()
     student = SimpleStudentSerializerForLog()
 
     class Meta:
@@ -320,7 +320,7 @@ class LogSerializer(serializers.ModelSerializer):
             "id",
             "student",
             "guardian",
-            "Authenticator",
+            "authenticator",
             "date_time",
             "action",
         ]
