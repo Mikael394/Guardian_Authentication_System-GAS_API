@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+from django.forms import ValidationError
 from rest_framework import serializers
 from djoser.serializers import (
     UserSerializer as BaseUserSerializer,
@@ -16,6 +18,8 @@ from .models import (
     Video,
 )
 
+User = get_user_model()
+
 
 class UserCreateSerializer(BaseUserCreateSerializer):
     class Meta(BaseUserCreateSerializer.Meta):
@@ -30,6 +34,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "is_active",
             "is_parent",
             "is_hrt",
+            "is_first_login",
             "is_authenticator",
             "date_of_birth",
             "password",
@@ -39,6 +44,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "is_parent",
             "is_hrt",
             "is_authenticator",
+            "is_first_login",
         ]
 
 
@@ -54,6 +60,7 @@ class UserSerializer(BaseUserSerializer):
             "gender",
             "date_of_birth",
             "is_active",
+            "is_first_login",
             "is_parent",
             "is_hrt",
             "is_authenticator",
@@ -63,14 +70,19 @@ class UserSerializer(BaseUserSerializer):
             "is_parent",
             "is_hrt",
             "is_authenticator",
+            "is_first_login",
         ]
-
-
-class SimpleStudentSerializer(serializers.ModelSerializer):
+class GradeAndSectionSerializer(serializers.ModelSerializer):
 
     class Meta:
+        model = GradeAndSection
+        fields = ["id", "grade", "home_room_teacher"]
+
+class SimpleStudentSerializer(serializers.ModelSerializer):
+    grade = GradeAndSectionSerializer()
+    class Meta:
         model = Student
-        fields = ["id", "first_name", "last_name", "grade", "image"]
+        fields = ["id", "first_name", "last_name", "grade", "image","is_present"]
 
 
 class GuardianSerializer(serializers.ModelSerializer):
@@ -164,11 +176,7 @@ class VideoSerializer(serializers.ModelSerializer):
         fields = ("id", "file", "uploaded_at")
 
 
-class GradeAndSectionSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = GradeAndSection
-        fields = ["id", "grade", "home_room_teacher"]
 
 
 class GuardianSerializerNested(serializers.ModelSerializer):
@@ -217,7 +225,7 @@ class GuardianVerifySerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     guardians = SimpleGuardianSerializer(many=True, required=False)
-
+    grade = GradeAndSectionSerializer()
     class Meta:
         model = Student
         fields = [

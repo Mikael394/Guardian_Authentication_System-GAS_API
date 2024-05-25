@@ -13,6 +13,7 @@ from .views import (
     StudentView,
     GuardianView,
     AuthenticatorView,
+    UserView,
     Verify,
     LogView,
     StudentViewNested,
@@ -34,6 +35,7 @@ router.register("video", VideoListCreate)
 router.register("hrts", HomeRoomTeacherView)
 router.register("sections", GradeAndSectionView)
 router.register("contact_book", ContactBookView)
+router.register("user", UserView)
 # router.register("students", StudentView)
 
 guardian_router = routers.NestedDefaultRouter(router, "guardians", lookup="guardian")

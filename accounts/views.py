@@ -28,6 +28,23 @@ def are_the_same(processed_img):
 
     return (c1 and c2 and c3)
 
+class UserView(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=["get"])
+    def remove_first_login(self, request, *args, **kwargs):
+        user = request.user
+        user.is_first_login = False
+        user.save()
+
+        return Response(
+            {"detail": "First Login status changed successfully..."},
+            status=status.HTTP_200_OK,
+        )
+    
+
     
 class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
