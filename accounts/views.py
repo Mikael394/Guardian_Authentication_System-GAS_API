@@ -33,22 +33,13 @@ class UserView(ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     
-    @action(detail=False, methods=["get"])
-    def remove_first_login(self, request, *args, **kwargs):
-        user = request.user
-        user.is_first_login = False
-        user.save()
-
-        return Response(
-            {"detail": "First Login status changed successfully..."},
-            status=status.HTTP_200_OK,
-        )
     
 
     
 class ParentView(ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
+    
 
     @action(detail=False, methods=["get", "post"])
     def activate(self, request, *args, **kwargs):
@@ -89,6 +80,24 @@ class ParentView(ModelViewSet):
                 {"detail": "Already activated!"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+    @action(detail=False, methods=["get","post"])
+    def remove_first_login(self, request, *args, **kwargs):
+        if request.method == "GET":
+            # Return guardians that are not associated with the student
+            users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "POST":
+            user_id = request.data["id"]
+            user = User.objects.get(id = user_id)
+            user.is_first_login = False
+            user.save()
+
+            return Response(
+                {"detail": "First Login status changed successfully..."},
+                status=status.HTTP_200_OK,
+            )
+    
      
 class HomeRoomTeacherView(ModelViewSet):
     queryset = HomeRoomTeacher.objects.all()
