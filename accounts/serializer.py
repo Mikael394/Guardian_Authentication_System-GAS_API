@@ -243,6 +243,23 @@ class StudentSerializer(serializers.ModelSerializer):
             "is_present",
         ]
         
+class StudentSerializerReg(serializers.ModelSerializer):
+    guardians = SimpleGuardianSerializer(many=True, required=False)
+    class Meta:
+        model = Student
+        fields = [
+            "id",
+            "first_name",
+            "image",
+            "last_name",
+            "date_of_birth",
+            "gender",
+            "grade",
+            "guardians",
+            "parents",
+            "is_present",
+        ]
+        
 class ContactBookSerializer(serializers.ModelSerializer):
     student = StudentSerializer()
     class Meta:

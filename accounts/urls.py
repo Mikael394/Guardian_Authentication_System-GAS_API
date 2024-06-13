@@ -13,6 +13,7 @@ from .views import (
     StudentView,
     GuardianView,
     AuthenticatorView,
+    StudentViewReg,
     UserView,
     Verify,
     LogView,
@@ -28,6 +29,7 @@ router.register("guardians", GuardianView, basename="guardians")
 router.register("grades", GradeAndSectionView, basename="grades")
 router.register("authenticator", AuthenticatorView)
 router.register("attendance", AttendanceView)
+router.register("student_reg", StudentViewReg)
 router.register("verify", Verify)
 router.register("logs", LogView)
 router.register("parents", ParentView)

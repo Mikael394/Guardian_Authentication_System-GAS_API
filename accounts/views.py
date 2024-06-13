@@ -12,7 +12,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from PIL import Image
 
 from .permission import IsAdminOrReadOnly
-from .serializer import AttendanceSerializer, ContactBookSerializer, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
+from .serializer import AttendanceSerializer, ContactBookSerializer, StudentSerializerReg, UserSerializer, ContactBookSerializerNested, GradeAndSectionSerializer, HomeRoomTeacherSerializer, ParentSerializer, AuthenticatorSerializer,GuardianSerializer,GuardianSerializerNested,StudentSerializer,LogSerializer, VideoSerializer
 from .utils import compare, save_up, extract_face_haar_cascade3,image_to_numpy,process_image
 from .models import Attendance, ContactBook, GradeAndSection, HomeRoomTeacher, Parent, Student,Guardian,Authenticator,Log, User, Video
 
@@ -426,6 +426,9 @@ class GuardianViewNested(ModelViewSet):
                 {"detail": "Guardian added to student successfully"},
                 status=status.HTTP_200_OK,
             )
+class StudentViewReg(ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializerReg
 
 
 class StudentView(ModelViewSet):
