@@ -17,7 +17,6 @@ from .models import (
     Log,
     Video,
 )
-
 User = get_user_model()
 
 
@@ -34,6 +33,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "is_active",
             "is_parent",
             "is_hrt",
+            "is_staff",
             "is_first_login",
             "is_authenticator",
             "date_of_birth",
@@ -45,6 +45,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "is_hrt",
             "is_authenticator",
             "is_first_login",
+            "is_staff",
         ]
 
 
@@ -63,6 +64,7 @@ class UserSerializer(BaseUserSerializer):
             "is_first_login",
             "is_parent",
             "is_hrt",
+            "is_staff",
             "is_authenticator",
         ]
         read_only_fields = [

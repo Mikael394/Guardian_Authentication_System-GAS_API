@@ -3,7 +3,6 @@ __pycache__/
 *.pyo
 *.pyd
 api/
-media/
 utility_backup.py
 .vscode/
 videos/
