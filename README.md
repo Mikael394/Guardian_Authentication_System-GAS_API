@@ -21,7 +21,6 @@ Welcome to the School Guardian Verification API repository! This project is aime
 - Django Nested Router
 - NumPy
 - Pillow
-- (Add any other specific requirements your project might have)
 
 ## Installation
 
